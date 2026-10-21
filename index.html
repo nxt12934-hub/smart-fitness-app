@@ -2,764 +2,503 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>全功能智慧健身課表與計時器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧健身課表與計時器</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        darkBg: '#0f172a',
-                        cardBg: '#1e293b',
-                        accent: '#38bdf8',
-                        accentHover: '#0ea5e9'
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        @keyframes pulse-fast {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.02); }
-        }
-        .animate-pulse-fast {
-            animation: pulse-fast 1s infinite;
-        }
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 3px;
-        }
+        body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+        button, select, input, a { cursor: pointer; }
     </style>
 </head>
-<body class="bg-darkBg text-slate-100 font-sans min-h-screen pb-12">
+<body class="min-h-screen pb-12">
 
-    <!-- Header -->
-    <header class="bg-cardBg border-b border-slate-700 sticky top-0 z-40 shadow-md">
+    <!-- 頂部導覽列 -->
+    <header class="bg-[#1e293b] border-b border-slate-700 sticky top-0 z-50 shadow-md">
         <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <i class="fa-solid fa-dumbbell text-accent text-xl"></i>
+                <i class="fa-solid fa-dumbbell text-sky-400 text-xl"></i>
                 <h1 class="text-sm font-bold tracking-wide">智慧健身課表與計時器</h1>
             </div>
-            <div class="flex space-x-1 overflow-x-auto py-1">
-                <button onclick="switchTab('generator')" id="nav-btn-generator" class="px-2 py-1 rounded-lg text-xs font-medium bg-accent text-slate-950 transition whitespace-nowrap">單日排課</button>
-                <button onclick="switchTab('weekly')" id="nav-btn-weekly" class="px-2 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">一週總覽</button>
-                <button onclick="switchTab('custom')" id="nav-btn-custom" class="px-2 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">自排</button>
-                <button onclick="switchTab('history')" id="nav-btn-history" class="px-2 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">紀錄</button>
+            <div class="flex space-x-1">
+                <button type="button" id="tab-gen" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-sky-400 text-slate-950 transition">單日排課</button>
+                <button type="button" id="tab-week" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition">一週總覽</button>
+                <button type="button" id="tab-cust" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition">自排</button>
+                <button type="button" id="tab-hist" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition">紀錄</button>
             </div>
         </div>
     </header>
 
-    <!-- Main Container -->
+    <!-- 主要內容區 -->
     <main class="max-w-md mx-auto px-4 py-4 space-y-4">
 
-        <!-- Today's Quick Launch Banner -->
-        <div id="today-banner" class="bg-gradient-to-r from-sky-900/80 to-slate-900 border border-sky-700/50 rounded-2xl p-4 shadow-lg flex justify-between items-center">
-            <div class="space-y-0.5">
-                <div class="text-[10px] text-accent font-bold uppercase tracking-wider" id="today-date-text">今天是 星期二</div>
-                <h3 class="text-sm font-bold text-white" id="today-plan-label">今日排定：背部訓練 (Back)</h3>
+        <!-- 今日快捷啟動橫幅 -->
+        <div class="bg-gradient-to-r from-sky-900 to-slate-900 border border-sky-700 rounded-2xl p-4 shadow-lg flex justify-between items-center">
+            <div>
+                <div class="text-[10px] text-sky-400 font-bold uppercase tracking-wider" id="today-date-text">今天是 星期幾</div>
+                <h3 class="text-sm font-bold text-white" id="today-plan-label">載入中...</h3>
             </div>
-            <button onclick="launchTodayWorkout()" class="bg-accent hover:bg-accentHover text-slate-950 font-bold px-3 py-2 rounded-xl text-xs transition shadow flex items-center space-x-1 whitespace-nowrap">
+            <button type="button" id="btn-launch-today" class="bg-sky-400 hover:bg-sky-300 text-slate-950 font-bold px-3 py-2 rounded-xl text-xs transition shadow flex items-center space-x-1">
                 <i class="fa-solid fa-play"></i>
                 <span>開始今日課表</span>
             </button>
         </div>
 
-        <!-- TAB 1: Generator & Workout Session -->
-        <div id="tab-generator" class="space-y-6">
-            
-            <!-- Setup Form Card -->
-            <div id="setup-card" class="bg-cardBg rounded-2xl p-5 shadow-lg border border-slate-800 space-y-4">
-                <h2 class="text-base font-semibold text-accent flex items-center space-x-2">
+        <!-- 畫面 1：單日排課與產生器 -->
+        <div id="view-generator" class="space-y-4">
+            <div id="setup-card" class="bg-[#1e293b] rounded-2xl p-5 shadow-lg border border-slate-800 space-y-4">
+                <h2 class="text-base font-semibold text-sky-400 flex items-center space-x-2">
                     <i class="fa-solid fa-sliders"></i>
-                    <span>個人數據、訓練目標與部位設定 (含伸展放鬆)</span>
+                    <span>個人數據、訓練目標與部位設定</span>
                 </h2>
 
-                <!-- Body Metrics Form -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">身高 (cm)</label>
-                        <input type="number" id="input-height" value="174" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent">
+                        <input type="number" id="input-height" value="174" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-400">
                     </div>
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">體重 (kg)</label>
-                        <input type="number" id="input-weight" value="115" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent">
+                        <input type="number" id="input-weight" value="115" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-400">
                     </div>
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">年齡</label>
-                        <input type="number" id="input-age" value="30" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent">
+                        <input type="number" id="input-age" value="30" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-400">
                     </div>
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">生理性別</label>
-                        <select id="input-gender" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent">
+                        <select id="input-gender" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-400">
                             <option value="male">男性</option>
                             <option value="female">女性</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- Calculated BMI & TDEE Display -->
-                <div id="metrics-result" class="bg-slate-900/80 rounded-xl p-3 border border-slate-800 text-xs flex justify-around text-center">
-                    <div>
-                        <span class="text-slate-400 block">BMI</span>
-                        <span id="val-bmi" class="font-bold text-accent text-sm">-</span>
-                    </div>
+                <div class="bg-slate-900 rounded-xl p-3 border border-slate-800 text-xs flex justify-around text-center">
+                    <div><span class="text-slate-400 block">BMI</span><span id="val-bmi" class="font-bold text-sky-400 text-sm">-</span></div>
                     <div class="border-r border-slate-800"></div>
-                    <div>
-                        <span class="text-slate-400 block">基礎代謝 BMR</span>
-                        <span id="val-bmr" class="font-bold text-slate-200 text-sm">- kcal</span>
-                    </div>
+                    <div><span class="text-slate-400 block">基礎代謝 BMR</span><span id="val-bmr" class="font-bold text-slate-200 text-sm">- kcal</span></div>
                     <div class="border-r border-slate-800"></div>
-                    <div>
-                        <span class="text-slate-400 block">每日總消耗 TDEE</span>
-                        <span id="val-tdee" class="font-bold text-slate-200 text-sm">- kcal</span>
-                    </div>
+                    <div><span class="text-slate-400 block">每日總消耗 TDEE</span><span id="val-tdee" class="font-bold text-slate-200 text-sm">- kcal</span></div>
                 </div>
 
-                <!-- Goal Selection -->
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">訓練核心目標</label>
                     <div class="grid grid-cols-2 gap-2">
-                        <button type="button" onclick="setGoal('hypertrophy')" id="goal-hypertrophy" class="py-2.5 rounded-xl text-xs font-bold border border-accent bg-accent/20 text-accent transition">💪 增肌肥大 (Hypertrophy)</button>
-                        <button type="button" onclick="setGoal('fatloss')" id="goal-fatloss" class="py-2.5 rounded-xl text-xs font-bold border border-slate-700 bg-slate-900 text-slate-400 transition">🔥 減脂雕塑 (Fat Loss)</button>
+                        <button type="button" id="goal-hyp" class="py-2.5 rounded-xl text-xs font-bold border border-sky-400 bg-sky-400/20 text-sky-400 transition">💪 增肌肥大</button>
+                        <button type="button" id="goal-fat" class="py-2.5 rounded-xl text-xs font-bold border border-slate-700 bg-slate-900 text-slate-400 transition">🔥 減脂雕塑</button>
                     </div>
                 </div>
 
-                <!-- Environment Toggle -->
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">訓練場域環境</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button type="button" onclick="setEnvironment('home')" id="env-home" class="py-2 rounded-xl text-xs font-medium border border-accent bg-accent/20 text-accent transition">🏠 居家自主</button>
-                        <button type="button" onclick="setEnvironment('gym')" id="env-gym" class="py-2 rounded-xl text-xs font-medium border border-slate-700 bg-slate-900 text-slate-400 transition">🏋️‍♂️ 健身房商用</button>
-                    </div>
-                </div>
-
-                <!-- Split Muscle Selection -->
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">選擇訓練部位主題 (含伸展放鬆)</label>
-                    <select id="input-split" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent">
-                        <option value="chest">🔥 胸部訓練日 (Chest Day - 20選4)</option>
-                        <option value="back">🦍 背部訓練日 (Back Day - 20選4)</option>
-                        <option value="legs">🦵 腿部訓練日 (Leg Day - 20選4)</option>
-                        <option value="shoulders">🦾 肩部訓練日 (Shoulder Day - 20選4)</option>
-                        <option value="biceps">💪 二頭肌專項訓練日 (Biceps Day - 20選4)</option>
-                        <option value="triceps">🦾 三頭肌專項訓練日 (Triceps Day - 20選4)</option>
-                        <option value="abs">⚡ 腹肌核心訓練日 (Ab Day - 20選4)</option>
-                        <option value="stretching">🧘 伸展與放鬆恢復日 (Stretching Day - 20選4)</option>
-                        <option value="fullbody">⚡ 全身綜合循環訓練</option>
+                    <label class="block text-xs text-slate-400 mb-1">選擇訓練部位主題</label>
+                    <select id="input-split" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-400">
+                        <option value="chest">🔥 胸部訓練日 (30選4)</option>
+                        <option value="back">🦍 背部訓練日 (30選4)</option>
+                        <option value="legs">🦵 腿部訓練日 (30選4)</option>
+                        <option value="shoulders">🦾 肩部訓練日 (30選4)</option>
+                        <option value="biceps">💪 二頭肌專項 (30選4)</option>
+                        <option value="triceps">🦾 三頭肌專項 (30選4)</option>
+                        <option value="abs">⚡ 腹肌核心 (30選4)</option>
+                        <option value="stretching">🧘 伸展恢復 (20種)</option>
+                        <option value="fullbody">⚡ 全身綜合循環</option>
                     </select>
                 </div>
 
-                <button onclick="generateWorkout()" class="w-full bg-accent hover:bg-accentHover text-slate-950 font-bold py-3 rounded-xl transition shadow-lg mt-2 flex items-center justify-center space-x-2">
+                <button type="button" id="btn-generate" class="w-full bg-sky-400 hover:bg-sky-300 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg mt-2 flex items-center justify-center space-x-2">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    <span>立即生成目標專屬課表</span>
+                    <span>立即生成專屬課表</span>
                 </button>
             </div>
 
-            <!-- Generated Workout View (Hidden by default) -->
+            <!-- 生成後的動作清單檢視 -->
             <div id="workout-container" class="hidden space-y-4">
-                <div class="bg-cardBg rounded-2xl p-4 border border-slate-800 flex justify-between items-center">
+                <div class="bg-[#1e293b] rounded-2xl p-4 border border-slate-800 flex justify-between items-center">
                     <div>
-                        <h3 id="plan-title" class="font-bold text-base text-accent">今日訓練課表</h3>
-                        <p id="plan-subtitle" class="text-xs text-slate-400 mt-0.5">精選 4 項高效率動作（可點擊「更換」替換動作）</p>
+                        <h3 id="plan-title" class="font-bold text-base text-sky-400">今日訓練課表</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">精選 4 項高效率動作（可點擊「更換」替換動作）</p>
                     </div>
-                    <button onclick="resetSetup()" class="bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 px-3 py-1.5 rounded-lg transition">
-                        <i class="fa-solid fa-rotate-left mr-1"></i>重設
-                    </button>
+                    <button type="button" id="btn-reset" class="bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 px-3 py-1.5 rounded-lg transition">重設</button>
                 </div>
 
-                <!-- Action List -->
-                <div id="exercise-list" class="space-y-3">
-                    <!-- Populated by JS -->
-                </div>
+                <div id="exercise-list" class="space-y-3"></div>
 
                 <div class="flex space-x-2">
-                    <button onclick="resetSetup()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3.5 rounded-xl transition shadow-lg flex items-center justify-center space-x-2 text-sm">
-                        <i class="fa-solid fa-arrow-left"></i>
-                        <span>返回設定</span>
-                    </button>
-                    <button onclick="startWorkoutSession()" class="flex-[2] bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3.5 rounded-xl transition shadow-lg flex items-center justify-center space-x-2 text-sm">
-                        <i class="fa-solid fa-play"></i>
-                        <span>開始計時</span>
-                    </button>
+                    <button type="button" id="btn-back-setup" class="flex-1 bg-slate-800 text-slate-200 font-bold py-3 rounded-xl text-sm">返回設定</button>
+                    <button type="button" id="btn-start-session" class="flex-[2] bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 rounded-xl text-sm">開始計時</button>
                 </div>
             </div>
-
-            <!-- Active Workout Session Timer Mode (Hidden by default) -->
-            <div id="active-session-card" class="hidden bg-cardBg rounded-2xl p-5 border border-slate-800 text-center space-y-6">
-                <div class="flex justify-between items-center text-xs text-slate-400">
-                    <span id="session-progress-text">動作 1 / 4</span>
-                    <button onclick="quitSession()" class="text-rose-400 hover:underline"><i class="fa-solid fa-xmark mr-1"></i>放棄訓練</button>
-                </div>
-
-                <!-- YouTube Link Box -->
-                <div class="w-full p-4 bg-slate-900 rounded-xl border border-slate-800 flex flex-col items-center space-y-2">
-                    <i class="fa-brands fa-youtube text-rose-500 text-3xl"></i>
-                    <p class="text-xs text-slate-300">需要觀看此動作的影片教學嗎？</p>
-                    <a id="active-yt-link" href="#" target="_blank" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition flex items-center space-x-1.5 shadow-md">
-                        <i class="fa-solid fa-play"></i>
-                        <span>YouTube 影片示範</span>
-                    </a>
-                </div>
-
-                <div class="space-y-2">
-                    <h2 id="active-ex-name" class="text-2xl font-black text-accent">深蹲</h2>
-                    <p id="active-ex-target" class="text-xs text-slate-400 bg-slate-900 inline-block px-3 py-1 rounded-full">目標：主肌群鍛鍊</p>
-                </div>
-
-                <!-- Timer Display Box -->
-                <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 relative overflow-hidden" id="timer-box">
-                    <div id="timer-label" class="text-xs text-slate-400 uppercase tracking-widest mb-1">訓練進行中</div>
-                    <div id="timer-display" class="text-6xl font-black tracking-wider text-slate-100 my-2">00:45</div>
-                    <div id="timer-sets-info" class="text-sm font-medium text-accent">第 1 組 / 共 3 組</div>
-                </div>
-
-                <!-- Controls -->
-                <div class="flex space-x-3">
-                    <button onclick="toggleTimerPause()" id="btn-pause" class="flex-1 bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-xl transition text-sm">
-                        <i class="fa-solid fa-pause mr-1"></i>暫停
-                    </button>
-                    <button onclick="skipTimerSet()" class="flex-1 bg-accent hover:bg-accentHover text-slate-950 font-bold py-3 rounded-xl transition text-sm">
-                        <i class="fa-solid fa-forward mr-1"></i>完成此組/跳過休息
-                    </button>
-                </div>
-            </div>
-
         </div>
 
-        <!-- TAB 2: Weekly Schedule Planner (一週排程) -->
-        <div id="tab-weekly" class="hidden space-y-4">
-            <div class="bg-cardBg rounded-2xl p-5 shadow-lg border border-slate-800 space-y-4">
+        <!-- 畫面 2：一週排程總覽 -->
+        <div id="view-weekly" class="hidden space-y-4">
+            <div class="bg-[#1e293b] rounded-2xl p-5 shadow-lg border border-slate-800 space-y-4">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-base font-semibold text-accent flex items-center space-x-2">
-                        <i class="fa-solid fa-calendar-week"></i>
-                        <span>一週訓練排程總覽 (週一至週日)</span>
-                    </h2>
-                    <button onclick="saveWeeklyPlan()" class="bg-accent hover:bg-accentHover text-slate-950 text-xs px-3 py-1.5 rounded-lg font-bold transition">
-                        儲存排程
-                    </button>
+                    <h2 class="text-base font-semibold text-sky-400">一週訓練排程總覽</h2>
+                    <button type="button" id="btn-save-weekly" class="bg-sky-400 text-slate-950 text-xs px-3 py-1.5 rounded-lg font-bold">儲存排程</button>
                 </div>
-                <p class="text-xs text-slate-400">為每週每一天指定對應的訓練主題或安排休息日。</p>
-
-                <div id="weekly-schedule-list" class="space-y-3">
-                    <!-- Populated by JS -->
-                </div>
-
-                <div class="flex space-x-2 pt-2">
-                    <button onclick="switchTab('generator')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3 rounded-xl transition text-sm flex items-center justify-center space-x-2">
-                        <i class="fa-solid fa-arrow-left"></i>
-                        <span>返回主畫面</span>
-                    </button>
-                </div>
+                <div id="weekly-schedule-list" class="space-y-3"></div>
             </div>
         </div>
 
-        <!-- TAB 3: Custom Workout Builder (自排課表) -->
-        <div id="tab-custom" class="hidden space-y-6">
-            <div class="bg-cardBg rounded-2xl p-5 shadow-lg border border-slate-800 space-y-4">
-                <h2 class="text-base font-semibold text-accent flex items-center space-x-2">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                    <span>自訂專屬訓練課表</span>
-                </h2>
-
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">課表名稱</label>
-                        <input type="text" id="custom-plan-name" placeholder="例如：我的全身伸展恢復" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent">
-                    </div>
-
-                    <div class="border-t border-slate-800 pt-3 space-y-3">
-                        <h3 class="text-xs font-semibold text-slate-300">從20大動作下拉選單挑選</h3>
-                        
-                        <div class="grid grid-cols-2 gap-2">
-                            <button type="button" onclick="setCustomEnv('home')" id="custom-env-home" class="py-1.5 rounded-lg text-xs font-medium border border-accent bg-accent/20 text-accent transition">🏠 居家動作庫</button>
-                            <button type="button" onclick="setCustomEnv('gym')" id="custom-env-gym" class="py-1.5 rounded-lg text-xs font-medium border border-slate-700 bg-slate-900 text-slate-400 transition">🏋️‍♂️ 健身房動作庫</button>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs text-slate-400 mb-1">選擇肌群部位</label>
-                            <select id="custom-category-select" onchange="updateCustomExerciseDropdown()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent">
-                                <option value="chest">胸部 (20種)</option>
-                                <option value="back">背部 (20種)</option>
-                                <option value="legs">腿部 (20種)</option>
-                                <option value="shoulders">肩部 (20種)</option>
-                                <option value="biceps">二頭肌 (20種)</option>
-                                <option value="triceps">三頭肌 (20種)</option>
-                                <option value="abs">腹部核心 (20種)</option>
-                                <option value="stretching">伸展放鬆 (20種)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs text-slate-400 mb-1">選擇具體項目與器材</label>
-                            <select id="custom-exercise-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent">
-                                <!-- Populated by JS -->
-                            </select>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1">訓練組數</label>
-                                <input type="number" id="custom-ex-sets" value="3" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent">
-                            </div>
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1">單組秒數</label>
-                                <input type="number" id="custom-ex-duration" value="45" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent">
-                            </div>
-                        </div>
-
-                        <button onclick="addSelectedCustomExercise()" class="w-full bg-slate-800 hover:bg-slate-700 text-accent font-bold py-2.5 rounded-xl transition text-xs border border-slate-700 flex items-center justify-center space-x-1">
-                            <i class="fa-solid fa-plus"></i>
-                            <span>將此項目加入自訂清單 (限4種)</span>
-                        </button>
-                    </div>
+        <!-- 畫面 3：自排課表 -->
+        <div id="view-custom" class="hidden space-y-6">
+            <div class="bg-[#1e293b] rounded-2xl p-5 shadow-lg border border-slate-800 space-y-4">
+                <h2 class="text-base font-semibold text-sky-400">自訂專屬訓練課表</h2>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">選擇肌群部位</label>
+                    <select id="cust-cat" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
+                        <option value="chest">胸部 (30種)</option>
+                        <option value="back">背部 (30種)</option>
+                        <option value="legs">腿部 (30種)</option>
+                        <option value="shoulders">肩部 (30種)</option>
+                        <option value="biceps">二頭肌 (30種)</option>
+                        <option value="triceps">三頭肌 (30種)</option>
+                        <option value="abs">腹部核心 (30種)</option>
+                        <option value="stretching">伸展放鬆 (20種)</option>
+                    </select>
                 </div>
-
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">選擇具體動作</label>
+                    <select id="cust-ex" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white"></select>
+                </div>
+                <button type="button" id="btn-add-cust" class="w-full bg-slate-800 text-sky-400 font-bold py-2.5 rounded-xl text-xs border border-slate-700">加入自訂清單 (限4種)</button>
+                
                 <div class="border-t border-slate-800 pt-3 space-y-2">
-                    <h4 class="text-xs font-semibold text-slate-400">目前自訂動作清單 (<span id="custom-count">0</span>/4)</h4>
-                    <div id="custom-exercise-list" class="space-y-2 max-h-48 overflow-y-auto">
-                        <p class="text-xs text-slate-500 text-center py-4">尚未新增任何動作</p>
+                    <h4 class="text-xs font-semibold text-slate-400">目前自訂動作清單 (<span id="cust-count">0</span>/4)</h4>
+                    <div id="cust-list" class="space-y-2 max-h-48 overflow-y-auto">
+                        <p class="text-xs text-slate-500 text-center py-4">尚未新增動作</p>
                     </div>
                 </div>
 
-                <div class="flex space-x-2 pt-2">
-                    <button onclick="switchTab('generator')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3.5 rounded-xl transition shadow-lg flex items-center justify-center space-x-2 text-sm">
-                        <i class="fa-solid fa-arrow-left"></i>
-                        <span>返回自動排課</span>
-                    </button>
-                    <button onclick="startCustomWorkoutSession()" id="btn-start-custom" disabled class="flex-[2] bg-slate-800 text-slate-500 font-bold py-3.5 rounded-xl transition shadow-lg flex items-center justify-center space-x-2 text-sm cursor-not-allowed">
-                        <i class="fa-solid fa-play"></i>
-                        <span>開始自訂課表計時</span>
-                    </button>
-                </div>
+                <button type="button" id="btn-start-cust" disabled class="w-full bg-slate-800 text-slate-500 font-bold py-3 rounded-xl text-sm cursor-not-allowed">開始自訂課表計時</button>
             </div>
         </div>
 
-        <!-- TAB 4: History & Records -->
-        <div id="tab-history" class="hidden space-y-4">
-            <div class="bg-cardBg rounded-2xl p-4 border border-slate-800 space-y-3">
-                <h2 class="text-base font-semibold text-accent flex items-center space-x-2">
-                    <i class="fa-solid fa-clock-rotate-left"></i>
-                    <span>歷史訓練紀錄</span>
-                </h2>
-                <div id="history-list" class="space-y-3">
-                    <!-- Populated by JS -->
-                </div>
-                <button onclick="switchTab('generator')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3 rounded-xl transition shadow-lg flex items-center justify-center space-x-2 text-sm mt-4">
-                    <i class="fa-solid fa-arrow-left"></i>
-                    <span>返回主畫面</span>
-                </button>
+        <!-- 畫面 4：歷史紀錄 -->
+        <div id="view-history" class="hidden space-y-4">
+            <div class="bg-[#1e293b] rounded-2xl p-4 border border-slate-800 space-y-3">
+                <h2 class="text-base font-semibold text-sky-400">歷史訓練紀錄</h2>
+                <div id="history-list" class="space-y-3"></div>
+            </div>
+        </div>
+
+        <!-- 獨立共用的計時器互動模式畫面 -->
+        <div id="view-session" class="hidden bg-[#1e293b] rounded-2xl p-5 border border-slate-800 text-center space-y-6">
+            <div class="flex justify-between items-center text-xs text-slate-400">
+                <span id="session-progress-text">動作 1 / 4</span>
+                <button type="button" id="btn-quit" class="text-rose-400 hover:underline">放棄訓練</button>
+            </div>
+
+            <div class="w-full p-4 bg-slate-900 rounded-xl border border-slate-800 flex flex-col items-center space-y-2">
+                <i class="fa-brands fa-youtube text-rose-500 text-3xl"></i>
+                <p class="text-xs text-slate-300">觀看 YouTube 標準動作教學</p>
+                <a id="active-yt-link" href="#" target="_blank" class="bg-rose-600 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md">YouTube 影片示範</a>
+            </div>
+
+            <div class="space-y-2">
+                <h2 id="active-ex-name" class="text-2xl font-black text-sky-400">動作名稱</h2>
+                <p id="active-ex-target" class="text-xs text-slate-400 bg-slate-900 inline-block px-3 py-1 rounded-full">目標：主肌群</p>
+            </div>
+
+            <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+                <div id="timer-label" class="text-xs text-slate-400 uppercase tracking-widest mb-1">訓練進行中</div>
+                <div id="timer-display" class="text-6xl font-black text-white my-2">00:45</div>
+                <div id="timer-sets-info" class="text-sm font-medium text-sky-400">第 1 組 / 共 3 組</div>
+            </div>
+
+            <div class="flex space-x-3">
+                <button type="button" id="btn-pause" class="flex-1 bg-slate-800 font-bold py-3 rounded-xl text-sm">暫停</button>
+                <button type="button" id="btn-skip" class="flex-1 bg-sky-400 text-slate-950 font-bold py-3 rounded-xl text-sm">完成此組/跳過休息</button>
             </div>
         </div>
 
     </main>
 
-    <!-- Exercise Detail Modal with YouTube Link -->
-    <div id="exercise-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-cardBg border border-slate-700 w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl relative max-h-[85vh] overflow-y-auto">
-            <button onclick="closeExerciseModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-100">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
-            <div class="space-y-1">
-                <span id="modal-ex-badge" class="text-[10px] bg-accent/20 text-accent px-2 py-0.5 rounded font-medium">動作解析與影音教學</span>
-                <h3 id="modal-ex-title" class="text-xl font-bold text-slate-100">動作名稱</h3>
-            </div>
-            
-            <div class="w-full p-4 bg-slate-900 rounded-xl border border-slate-800 flex flex-col items-center space-y-2">
-                <i class="fa-brands fa-youtube text-rose-500 text-3xl"></i>
-                <p class="text-xs text-slate-300">觀看 YouTube 標準動作示範教學</p>
-                <a id="modal-yt-link" href="#" target="_blank" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition flex items-center space-x-2 shadow-md">
-                    <i class="fa-solid fa-play"></i>
-                    <span>前往 YouTube 觀看教學</span>
-                </a>
-            </div>
-
-            <div class="space-y-3 text-xs text-slate-300">
-                <div>
-                    <h4 class="font-semibold text-accent mb-1"><i class="fa-solid fa-list-check mr-1"></i>標準動作步驟</h4>
-                    <p id="modal-ex-steps" class="leading-relaxed bg-slate-900/60 p-3 rounded-xl text-slate-300">-</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-emerald-400 mb-1"><i class="fa-solid fa-lightbulb mr-1"></i>核心發力與呼吸技巧</h4>
-                    <p id="modal-ex-tips" class="leading-relaxed bg-slate-900/60 p-3 rounded-xl text-slate-300">-</p>
-                </div>
-            </div>
-
-            <button onclick="closeExerciseModal()" class="w-full bg-slate-800 hover:bg-slate-700 py-2.5 rounded-xl font-medium text-xs transition">
-                關閉解析
-            </button>
+    <!-- 動作解析 Modal -->
+    <div id="modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-[#1e293b] border border-slate-700 w-full max-w-sm rounded-2xl p-5 space-y-4 relative">
+            <button type="button" id="modal-close" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h3 id="modal-title" class="text-xl font-bold text-white">動作名稱</h3>
+            <a id="modal-yt" href="#" target="_blank" class="block bg-rose-600 text-center text-white font-bold py-2.5 rounded-xl text-xs">YouTube 影片教學</a>
+            <p id="modal-steps" class="text-xs text-slate-300 bg-slate-900 p-3 rounded-xl">-</p>
+            <p id="modal-tips" class="text-xs text-emerald-400 bg-slate-900 p-3 rounded-xl">-</p>
         </div>
     </div>
 
-    <!-- Application JavaScript -->
+    <!-- 核心 JavaScript 邏輯 -->
     <script>
-        const baseChest = [
-            { name: '仰臥啞鈴地板臥推', target: '胸大肌、三頭肌', steps: '仰臥於地面，雙手握啞鈴於胸部兩側，向上推起至手臂伸直但不鎖死。', tips: '下放時吸氣，推起時吐氣，手肘與身體夾角約45-60度。' },
-            { name: '標準伏地挺身', target: '胸肌下緣、核心', steps: '雙手比肩膀略寬撐地，身體從頭到腳呈一直線，屈肘下放至胸口貼近地面。', tips: '收緊腹部與臀部，避免腰部下陷。' },
-            { name: '啞鈴地板飛鳥', target: '胸肌外側、中縫', steps: '仰臥地面雙手持啞鈴向上，手肘微屈向外打開如抱樹般向下放至與地面平行。', tips: '感受胸大肌的張力與拉伸感。' },
-            { name: '上斜伏地挺身 (手高腳低)', target: '上胸肌', steps: '將雙手撐在椅凳上進行伏地挺身。', tips: '重心向前，針對胸肌上部刺激。' },
-            { name: '下斜伏地挺身 (手低腳高)', target: '胸肌中上束', steps: '雙腳踩在椅凳上，雙手撐地進行伏地挺身。', tips: '核心收緊，增加上胸與三角肌前束負荷。' },
-            { name: '彈力帶夾胸', target: '胸大肌內側', steps: '彈力帶固定於身後，雙臂向前抱攏夾緊。', tips: '頂峰收縮維持1秒。' },
-            { name: '單臂啞鈴地板臥推', target: '單側胸肌與抗旋轉核心', steps: '單手持啞鈴進行臥推，另一手平放地面維持平衡。', tips: '軀幹保持穩定，避免身體歪斜。' },
-            { name: '寬距伏地挺身', target: '胸大肌外側', steps: '雙手距離大約兩倍肩寬進行伏地挺身。', tips: '加寬手距以增加胸肌外側伸展。' },
-            { name: '窄距鑽石伏地挺身', target: '三頭肌與胸肌中縫', steps: '雙手食指與姆指拼成鑽石形狀進行伏地挺身。', tips: '手肘夾緊身體兩側。' },
-            { name: '啞鈴地板窄推', target: '胸肌內側與三頭肌', steps: '雙手緊握啞鈴貼於胸口兩側向上推起。', tips: '推起時啞鈴互相靠近。' },
-            { name: '單腳支撐伏地挺身', target: '胸肌與動態核心', steps: '單腳懸空進行伏地挺身。', tips: '強化全身穩定度。' },
-            { name: '拍手爆發伏地挺身', target: '胸肌爆發力', steps: '推起瞬間雙手離地拍手。', tips: '適合中高級訓練者。' },
-            { name: '啞鈴仰臥 pullover', target: '胸肌擴胸與上背', steps: '仰臥單手或雙手持啞鈴由腹部上方越過頭頂向下放。', tips: '感受胸廓擴張。' },
-            { name: '彈力帶高位夾胸', target: '胸肌下束', steps: '彈力帶固定於高處向下斜向夾胸。', tips: '針對胸肌下緣輪廓。' },
-            { name: '跪姿伏地挺身', target: '胸肌初階訓練', steps: '膝蓋著地進行伏地挺身。', tips: '適合初學者建立發力基礎。' },
-            { name: '啞鈴地板旋轉推舉', target: '胸肌與旋轉肌', steps: '推起時手腕由橫向轉為縱向。', tips: '增加胸肌內側收縮感。' },
-            { name: '彈力帶單臂推胸', target: '單側抗旋胸推', steps: '側對彈力帶單手向前推出。', tips: '對抗身體旋轉力。' },
-            { name: '背負背包伏地挺身', target: '負重胸肌訓練', steps: '背部背包裝重物進行伏地挺身。', tips: '增加徒手訓練強度。' },
-            { name: '慢速離心伏地挺身', target: '胸肌肌肥大', steps: '下放過程維持4秒慢速。', tips: '最大化肌肉纖維破壞。' },
-            { name: '啞鈴地板死式推舉', target: '胸肌與三頭肌', steps: '每次由地面完全靜止起動向上推。', tips: '消除借力借慣性。' }
-        ];
-
-        const baseBack = [
-            { name: '單臂啞鈴俯身划船', target: '背闊肌、上背', steps: '單手單膝支撐於椅凳上，另一手持啞鈴自然下垂，背部夾緊將啞鈴拉向髖部。', tips: '手肘貼近軀幹，拉起時吐氣並夾緊背肌。' },
-            { name: '彈力帶直立划船', target: '上背、斜方肌', steps: '雙腳踩住彈力帶中央，雙手握住兩端向上提拉至胸口高度。', tips: '手肘帶領向上，保持肩膀放鬆。' },
-            { name: '超人式背屈伸', target: '下背部、豎脊肌', steps: '趴在地上，雙手向前伸直，同時將雙臂與雙腿向上抬起離地。', tips: '利用下背及臀肌發力，切勿過度猛烈抬起。' },
-            { name: '門上引體向上', target: '背闊肌整體', steps: '雙手寬握門上單槓向上拉起。', tips: '挺胸向上，感受背闊肌發力。' },
-            { name: '雙啞鈴俯身雙向划船', target: '中背與菱形肌', steps: '雙手持啞鈴俯身，同時將啞鈴向臀部方向拉起。', tips: '背部維持平直，夾緊肩胛骨。' },
-            { name: '彈力帶直臂下拉', target: '背闊肌下緣', steps: '將彈力帶固定在高處，雙手直臂向下壓至大腿。', tips: '全程保持手臂微曲。' },
-            { name: '反手握門上引體向上', target: '背闊肌與二頭肌', steps: '反手握槓向上拉起。', tips: '二頭肌協同發力。' },
-            { name: '啞鈴俯身單臂直臂下拉', target: '背闊肌隔離', steps: '單手持啞鈴直臂向後拉起。', tips: '感受背闊肌張力。' },
-            { name: '俯臥背肌交替抬起', target: '下背豎脊肌', steps: '俯臥地面交替抬起對側手腳。', tips: '動作平穩流暢。' },
-            { name: '彈力帶坐姿划船', target: '中背部', steps: '坐在地上雙腳踩彈力帶向後拉。', tips: '背部打直不駝背。' },
-            { name: '寬握彈力帶下拉', target: '背闊肌外側寬度', steps: '雙手寬握彈力帶向下拉至胸前。', tips: '擴展背部視覺寬度。' },
-            { name: '啞鈴海豚划船', target: '上背與後三角', steps: '俯身呈Y字型軌跡向外拉起。', tips: '強化上背線條。' },
-            { name: '彈力帶單臂划船', target: '單側背肌訓練', steps: '單腳踩彈力帶單手向後拉。', tips: '隨時隨地可訓練。' },
-            { name: '俯臥W字夾背', target: '菱形肌與中下斜方', steps: '趴地手臂舉起呈W字夾緊背部。', tips: '改善圓肩駝背。' },
-            { name: '負重超人式背屈伸', target: '強化下背肌力', steps: '雙手抱輕啞鈴於胸前進行超人式。', tips: '增加下背抗阻強度。' },
-            { name: '斜向彈力帶划船', target: '背闊肌多角度刺激', steps: '斜向固定彈力帶進行划船。', tips: '變換肌肉受力角度。' },
-            { name: '中立握門上引體向上', target: '背闊肌中下束', steps: '使用平行把手進行引體向上。', tips: '對手肘關節更友善。' },
-            { name: '彈力帶面拉划船', target: '上背與後三角肌', steps: '拉動彈力帶至耳際兩側。', tips: '肘尖抬高夾緊。' },
-            { name: '啞鈴俯身孤立划船', target: '背闊肌下緣孤立', steps: '身體貼凳單手持啞鈴向後拉。', tips: '杜絕身體晃動借力。' },
-            { name: '背包負重引體向上', target: '高強度背肌訓練', steps: '背負背包進行單槓引體。', tips: '進階背肌訓練法。' }
-        ];
-
-        const baseLegs = [
-            { name: '啞鈴高腳盃深蹲', target: '大腿前側、臀大肌', steps: '雙手托住啞鈴於胸前，雙腳與肩同寬。臀部向後坐下蹲至大腿與地面平行。', tips: '下蹲時吸氣，起身時吐氣；膝蓋方向與腳尖保持一致。' },
-            { name: '啞鈴羅馬尼亞硬舉', target: '臀部、後側鏈肌群', steps: '雙手握啞鈴於大腿前，微屈膝，臀部向後推使軀幹向前傾斜，感受大腿後側拉伸感。', tips: '背部維持平直不可拱起，感受臀肌發力將骨盆向前推回。' },
-            { name: '徒手弓步蹲', target: '股四頭肌、臀腿', steps: '雙腳前後跨步，身體垂直向下蹲至雙膝皆呈90度。', tips: '軀幹保持直立，重心落在前後腳之間。' },
-            { name: '保加利亞分腿蹲', target: '單腿臀腿爆發力', steps: '後腳置於凳上進行單腿下蹲。', tips: '重心放前腳，挺胸收腹。' },
-            { name: '徒手深蹲跳', target: '爆發力與心肺', steps: '下蹲後瞬間發力向上跳躍，落地時緩衝。', tips: '膝蓋微曲吸收落地衝擊力。' },
-            { name: '啞鈴側弓步蹲', target: '大腿內外側、臀中肌', steps: '手持啞鈴向側邊跨出下蹲。', tips: '單側膝蓋與腳尖朝外。' },
-            { name: '啞鈴箱上登階', target: '單腿股四頭肌與臀大肌', steps: '手持啞鈴單腳踩上椅凳再下來。', tips: '專注單腿發力。' },
-            { name: '徒手後撤弓步蹲', target: '臀大肌與平衡感', steps: '單腳向後跨步下蹲。', tips: '膝蓋不撞擊地面。' },
-            { name: '靠牆靜態深蹲 (Wall Sit)', target: '股四頭肌耐力', steps: '背貼牆面下蹲至大腿平行地面維持不動。', tips: '呼吸平穩保持大腿持續張力。' },
-            { name: '啞鈴相撲深蹲', target: '內收肌群與臀大肌', steps: '雙腳大步寬站姿且腳尖朝外下蹲。', tips: '針對大腿內側與臀部外側。' },
-            { name: '單腿羅馬尼亞硬舉', target: '單腿平衡與後側鏈', steps: '單腳站立另一腳向後踢起進行硬舉。', tips: '訓練核心與臀腿協調。' },
-            { name: '彈力帶深蹲', target: '抗阻股四頭肌', steps: '雙腳踩彈力帶兩端進行深蹲。', tips: '頂峰張力顯著。' },
-            { name: '徒手臀橋 (Glute Bridge)', target: '臀大肌專項', steps: '仰臥屈膝將骨盆向上頂起。', tips: '頂點夾緊臀部1秒。' },
-            { name: '單腿徒手臀橋', target: '單側臀肌孤立', steps: '單腳著地另一腳抬起進行臀橋。', tips: '加強單側臀部刺激。' },
-            { name: '啞鈴垂直提踵', target: '小腿腓腸肌', steps: '手持啞鈴站在階梯邊緣做提踵。', tips: '感受小腿拉伸與收縮。' },
-            { name: '徒手深蹲衝刺走', target: '下肢動態耐力', steps: '半蹲姿態進行快速小碎步移動。', tips: '維持大腿持續燃燒感。' },
-            { name: '彈力帶腿後勾', target: '大腿後側膕繩肌', steps: '站立用彈力帶勾住腳踝向後勾起。', tips: '孤立訓練後側鏈。' },
-            { name: '啞鈴蹲跳 (Jump Squat)', target: '下肢爆炸力', steps: '手持輕啞鈴進行深蹲跳躍。', tips: '提升運動表現與燃脂。' },
-            { name: '側向移位深蹲', target: '臀中肌與外側臀部', steps: '深蹲姿態進行左右側向跨步。', tips: '強化臀部外側線條。' },
-            { name: '慢速離心深蹲', target: '下肢肌肥大', steps: '下蹲過程維持4秒慢速控制。', tips: '最大化肌肉纖維撕裂。' }
-        ];
-
-        const baseShoulders = [
-            { name: '坐姿啞鈴肩推', target: '三角肌前束與中束', steps: '坐姿挺胸，雙手持啞鈴於肩膀兩側，向上推舉至頭頂上方。', tips: '核心收緊避免腰椎過度前凸。' },
-            { name: '啞鈴側平舉', target: '三角肌中束', steps: '站立雙手持啞鈴於身體兩側，向外側舉起至與肩膀同高。', tips: '手肘微曲，想像用手肘帶領向上，切勿聳肩。' },
-            { name: '啞鈴俯身飛鳥', target: '三角肌後束', steps: '軀幹向前俯身至幾乎與地面平行，雙手持啞鈴向外側打開。', tips: '感受上背與後三角肌的夾緊收縮。' },
-            { name: '啞鈴前平舉', target: '三角肌前束', steps: '雙手持啞鈴輪流向前舉起至與眼平高。', tips: '身體保持穩定不晃動。' },
-            { name: '啞鈴聳肩', target: '斜方肌', steps: '雙手持啞鈴於體側，將肩膀向上聳起靠近耳朵。', tips: '頂點停留2秒感受斜方肌收縮。' },
-            { name: '彈力帶面拉', target: '後三角肌與旋轉肌袖', steps: '雙手拉動彈力帶至面部兩側。', tips: '手肘向外打開夾緊上背。' },
-            { name: '阿诺肩推 (Arnold Press)', target: '三角肌全面刺激', steps: '啞鈴手心朝向自己向上推起同時旋轉外展。', tips: '動作流暢兼顧前中束。' },
-            { name: '彈力帶推舉', target: '三角肌群', steps: '雙腳踩彈力帶向上推舉。', tips: '感受彈力帶張力。' },
-            { name: '單臂啞鈴側平舉', target: '三角肌中束單側強化', steps: '單手抓固定物身體傾斜進行側平舉。', tips: '孤立刺激中束。' },
-            { name: '啞鈴立正划船', target: '斜方肌與三角肌中束', steps: '雙手持啞鈴直立向上提拉至胸口。', tips: '手肘高於手腕。' },
-            { name: 'Y字上舉 (Y-Raises)', target: '下斜方與後三角', steps: '俯身手臂呈Y字向上舉起。', tips: '改善肩胛穩定度。' },
-            { name: '彈力帶單臂側平舉', target: '三角肌中束', steps: '單腳踩彈力帶單手向外側平舉。', tips: '居家練肩膀好幫手。' },
-            { name: '啞鈴趴地三角肌後束飛鳥', target: '後三角孤立', steps: '趴在斜凳上進行啞鈴飛鳥。', tips: '完全杜絕身體借力。' },
-            { name: '坐姿啞鈴交替肩推', target: '單側肩膀控制力', steps: '雙手持啞鈴交替向上推舉。', tips: '延長肩膀緊張時間。' },
-            { name: '彈力帶高位面拉', target: '後三角與上背', steps: '彈力帶固定高處向面部拉動。', tips: '改善圓肩姿勢。' },
-            { name: '啞鈴推舉轉體', target: '肩帶全面活化', steps: '推起時旋轉手腕。', tips: '增加神經肌肉徵召。' },
-            { name: '彈力帶直立前平舉', target: '三角肌前束', steps: '雙腳踩彈力帶向前平舉。', tips: '平穩控制下放。' },
-            { name: '背包前平舉', target: '居家負重肩部訓練', steps: '雙手提著背包把手向前平舉。', tips: '靈活利用身邊道具。' },
-            { name: '坐姿雙向側平舉', target: '三角肌中束耐力', steps: '坐姿進行高密度側平舉。', tips: '減少下肢代償。' },
-            { name: '慢速離心側平舉', target: '中束肌肥大', steps: '側平舉下放過程維持3秒慢速。', tips: '顯著增強肩膀線條。' }
-        ];
-
-        const baseBiceps = [
-            { name: '滑輪站姿二頭彎舉 (Cable Bicep Curl)', target: '肱二頭肌全行程恆定張力', steps: '面對低位滑輪手握直桿或繩索向上彎舉。', tips: '滑輪提供全程不間斷抗阻。' },
-            { name: '牧師椅槓鈴彎舉 (Preacher Curl)', target: '肱二頭肌短頭 (峰值)', steps: '手臂靠在牧師椅斜墊上持曲桿向上彎舉。', tips: '鎖死肩膀防止借力。' },
-            { name: '上斜凳啞鈴彎舉 (Incline Dumbbell Curl)', target: '肱二頭肌長頭 (極致伸展)', steps: '躺在45度上斜凳上雙手向下垂懸進行彎舉。', tips: '長頭得到完全拉伸。' },
-            { name: '坐姿啞鈴錘式彎舉 (Seated Hammer Curl)', target: '肱肌與橈側手肌群', steps: '坐姿掌心相對持啞鈴向上提起。', tips: '增加手臂視覺厚度。' },
-            { name: '器械二頭肌彎舉機 (Bicep Curl Machine)', target: '肱二頭肌孤立訓練', steps: '坐在二頭機台上握住把手向上彎舉。', tips: '固定軌道提供完美孤立效果。' },
-            { name: '專心彎舉 (Concentration Curl)', target: '二頭肌頂峰雕塑', steps: '坐姿單肘抵住大腿內側進行單臂彎舉。', tips: '孤立打造二頭肌峰值。' },
-            { name: '蜘蛛彎舉 (Spider Curl)', target: '肱二頭肌短頭', steps: '胸腹部貼在垂直斜凳背面進行彎舉。', tips: '手臂垂直向下起步。' },
-            { name: '彈力帶高位二頭彎舉 (High Cable Curl)', target: '雙臂展開二頭夾擊', steps: '雙側高位滑輪拉向耳朵兩側彎舉。', tips: '塑造二頭肌頂峰分離度。' },
-            { name: '槓鈴站姿二頭彎舉 (Barbell Bicep Curl)', target: '二頭肌整體力量', steps: '站姿雙手正手或反手握槓鈴向上彎舉。', tips: '大重量訓練二頭肌基礎。' },
-            { name: '反手槓鈴彎舉 (Reverse Barbell Curl)', target: '前臂伸肌與肱肌', steps: '雙手反手握槓鈴向下進行彎舉。', tips: '強化前臂與肘關節周邊。' },
-            { name: '單臂滑輪錘式彎舉', target: '肱肌與前臂', steps: '使用滑輪繩索進行單臂錘式彎舉。', tips: '維持全程穩定張力。' },
-            { name: '坐姿交替啞鈴彎舉', target: '二頭肌耐力與控制', steps: '坐姿左右手交替進行彎舉。', tips: '減少身體晃動借力。' },
-            { name: '纜繩單臂牧師椅彎舉', target: '單側二頭肌孤立', steps: '單手持滑輪在牧師椅上彎舉。', tips: '精準感受短頭發力。' },
-            { name: '史密斯機器二頭彎舉', target: '固定軌道大重量彎舉', steps: '於史密斯槓下進行反手彎舉。', tips: '軌道穩定安全。' },
-            { name: '彈力帶跪姿二頭彎舉', target: '居家二頭肌強化', steps: '膝蓋壓住彈力帶一端向上彎舉。', tips: '隨時隨地感受泵感。' },
-            { name: '啞鈴21響法彎舉 (21s Bicep Curl)', target: '二頭肌極限泵感', steps: '分段下半程7次、上半程7次、全程7次。', tips: '乳酸堆積極度強烈。' },
-            { name: '對握啞鈴斜凳彎舉', target: '肱肌與長頭協同', steps: '上斜凳上進行錘式角度彎舉。', tips: '平衡手臂各側肌肉。' },
-            { name: '雙槓輔助二頭彎舉', target: '自身體重二頭訓練', steps: '藉由特殊器材利用自身體重彎舉。', tips: '功能性手臂訓練。' },
-            { name: '慢速離心滑輪彎舉', target: '二頭肌肌肥大', steps: '滑輪彎舉放下過程維持4秒慢速。', tips: '最大化肌纖維破壞。' },
-            { name: '壺鈴二頭彎舉 (Kettlebell Curl)', target: '壺鈴重心手臂訓練', steps: '手持壺鈴把手進行彎舉。', tips: '重心偏移增加前臂穩定。' }
-        ];
-
-        const baseTriceps = [
-            { name: '滑輪三頭肌下壓 (Tricep Pushdown)', target: '三頭肌整體與外側頭', steps: '面對滑輪使用直桿或繩索向下壓伸手臂。', tips: '上臂夾緊軀幹不動。' },
-            { name: '仰臥槓鈴臂屈伸 (Skull Crushers)', target: '三頭肌長頭厚度', steps: '平躺持曲桿向額頭下方屈肘再推起。', tips: '肘關節保持朝向前方不外張。' },
-            { name: '過頂纜繩臂屈伸 (Overhead Cable Extension)', target: '三頭肌長頭極致伸展', steps: '背對滑輪將繩索經頭頂向前上方推出。', tips: '長頭得到最大張力伸展。' },
-            { name: '器械三頭肌屈伸機 (Tricep Extension Machine)', target: '三頭肌孤立推展', steps: '坐於三頭機台上向前推動靠墊。', tips: '固定軌道安全高效。' },
-            { name: '雙槓臂屈伸 (Tricep Dips)', target: '三頭肌與下胸力量', steps: '雙槓支撐身體直立上下屈伸手臂。', tips: '身體保持直立以集中三頭發力。' },
-            { name: '窄距槓鈴臥推 (Close-Grip Bench Press)', target: '三頭肌整體大重量力量', steps: '平躺窄握距槓鈴進行臥推。', tips: '手距與肩同寬或略窄。' },
-            { name: '單臂滑輪反手下壓 (Single Arm Reverse Pushdown)', target: '三頭肌內側頭專項', steps: '單手反手握住滑輪把手向下壓。', tips: '針對三頭肌內側線條。' },
-            { name: '啞鈴俯身踢腿 (Dumbbell Kickbacks)', target: '三頭肌分離度雕塑', steps: '單手支撐凳子持啞鈴向後踢直到手臂打直。', tips: '頂點停留1秒收縮。' },
-            { name: '史密斯窄距臥推', target: '固定軌道三頭推舉', steps: '於史密斯架上進行窄距臥推。', tips: '安全挑戰大重量三頭。' },
-            { name: '坐姿啞鈴頸後雙手臂屈伸', target: '三頭肌長頭雙手合力', steps: '坐姿雙手持啞鈴於腦後向上推起。', tips: '上臂貼近耳側。' },
-            { name: '彈力帶過頂三頭伸展', target: '居家三頭肌長頭', steps: '腳踩彈力帶由腦後向上推伸。', tips: '感受長頭持續張力。' },
-            { name: '單臂纜繩過頂臂屈伸', target: '單側三頭肌長頭', steps: '單手持滑輪在腦後向上推出。', tips: '精準雕塑單側手臂。' },
-            { name: '牧師椅三頭肌下压', target: '三頭肌孤立固定', steps: '手臂靠在牧師椅背進行下壓。', tips: '完全杜絕身體借力。' },
-            { name: 'V字把三頭下壓', target: '三頭肌外側頭', steps: '使用V型把手進行滑輪下壓。', tips: '末端外旋增加收縮。' },
-            { name: '仰臥啞鈴碎顱者 (Dumbbell Skull Crusher)', target: '三頭肌雙側獨立', steps: '平躺雙手各持啞鈴向耳側下放。', tips: '矯正左右三頭不平衡。' },
-            { name: '地雷架三頭肌推舉 (Landmine Tricep Press)', target: '地雷架手臂訓練', steps: '單手握地雷桿端進行推舉。', tips: '結合核心與三頭發力。' },
-            { name: '慢速離心三頭下壓', target: '三頭肌肌肥大', steps: '滑輪下壓回程維持4秒慢速。', tips: '最大化三頭肌撕裂感。' },
-            { name: '跪姿彈力帶三頭踢腿', target: '居家三頭肌雕塑', steps: '四足跪姿配合彈力帶向後踢直。', tips: '動作穩定流暢。' },
-            { name: '壺鈴過頂三頭伸展', target: '壺鈴三頭肌訓練', steps: '雙手握壺鈴牛角部位過頂伸展。', tips: '重心平衡手臂肌肉。' },
-            { name: '三頭肌高強度力竭組 (Drop Set)', target: '手臂極限充血', steps: '滑輪下壓快速遞減重量做到力竭。', tips: '達到手臂訓練巔峰。' }
-        ];
-
-        const baseAbs = [
-            { name: '滑輪跪姿捲腹 (Cable Crunch)', target: '腹直肌強力收縮', steps: '雙膝跪地面對高位滑輪，雙手抱繩於耳側，腹部收縮向下凹陷捲起上身。', tips: '骨盆保持穩定，用腹肌發力而非手臂下壓。' },
-            { name: '懸垂舉腿 (Hanging Leg Raise)', target: '下腹與核心', steps: '雙手正握單槓懸掛，腹肌發力將雙腿向上抬起至與地面平行或更高。', tips: '避免身體過度前後擺動，放回時控制速度。' },
-            { name: '羅馬椅側屈 (Roman Chair Side Bend)', target: '腹斜肌', steps: '側身固定於羅馬椅上，向側下方下放再發力拉起。', tips: '保持身體在同一平面。' },
-            { name: '仰臥起坐斜板 (Decline Sit-Up)', target: '腹直肌全段', steps: '固定於下斜板上進行捲腹起坐。', tips: '感受腹部張力。' },
-            { name: '棒式核心支撐 (Plank)', target: '深層核心', steps: '前臂與腳尖撐地，全身收緊。', tips: '持續收緊腹部。' },
-            { name: '抗力球捲腹 (Stability Ball Crunch)', target: '核心穩定與腹直肌', steps: '背部躺在抗力球上進行捲腹。', tips: '利用球體不穩定性強化深層核心。' },
-            { name: '船式靜態支撐 (Boat Pose)', target: '深層腹橫肌', steps: '坐姿身體後仰與雙腿離地呈V字靜止。', tips: '呼吸平穩核心收緊。' },
-            { name: '器械腹部捲腹機 (Abdominal Crunch Machine)', target: '腹直肌專項器械', steps: '坐在捲腹機上向前推動靠墊收縮腹肌。', tips: '感受重量抗阻。' },
-            { name: '側臥抬腿捲腹', target: '腹斜肌雕塑', steps: '側臥同時將上身與雙腿向上夾起。', tips: '單側側腹發力。' },
-            { name: '藥球俄羅斯轉體 (Medicine Ball Russian Twist)', target: '動態核心旋轉', steps: '手持藥球進行左右旋轉轉體。', tips: '增加抗旋轉負荷。' },
-            { name: '懸垂舉膝 (Hanging Knee Raise)', target: '下腹部基礎', steps: '懸掛單槓將膝蓋屈曲向上抬起。', tips: '比舉腿略為輕鬆適合中階。' },
-            { name: '滑輪側向屈體 (Cable Woodchopper)', target: '強力腹斜肌旋轉', steps: '側向拉動滑輪進行砍木動作。', tips: '鍛鍊強大側腹與抗旋力。' },
-            { name: 'Ab Wheel 腹肌輪跪姿推展', target: '核心極限挑戰', steps: '雙膝跪地手持腹肌輪向前推展再拉回。', tips: '腰椎絕對不可塌陷。' },
-            { name: '斜板負重仰臥起坐', target: '高強度腹肌訓練', steps: '手抱槓片於胸前在斜板做起坐。', tips: '進階腹肌負荷訓練。' },
-            { name: '懸垂雨刷 (Hanging Windshield Wiper)', target: '高級核心旋轉', steps: '懸掛單槓雙腿伸直左右擺動如雨刷。', tips: '核心控制的頂峰。' },
-            { name: '仰臥互觸腳踝 (Heel Touches)', target: '腹斜肌側線', steps: '仰臥屈膝左右手輪流去摸同側腳踝。', tips: '收緊側腹群。' },
-            { name: '仰臥反向抬腿 (Reverse Crunches)', target: '下腹強效收縮', steps: '仰臥將臀部與雙腿向上捲起。', tips: '下背緊貼墊子。' },
-            { name: '抗力球棒式 (Stability Ball Plank)', target: '動態深層核心', steps: '前臂撐在抗力球上做棒式。', tips: '對抗球體晃動提升核心穩定。' },
-            { name: '直腿V字碰趾 (Toe Touches)', target: '腹直肌全段收縮', steps: '仰臥雙腿抬高與地面垂直，雙手去碰腳尖。', tips: '頂點停留1秒。' },
-            { name: '側棒式轉體觸地 (Side Plank Thread the Needle)', target: '腹斜肌與胸椎活動', steps: '側棒式姿勢將手臂穿過身體下方再向上延伸。', tips: '兼顧核心與軀幹旋轉。' }
-        ];
-
-        const baseStretching = [
-            { name: '坐姿前彎腿後側伸展 (Seated Hamstring Stretch)', target: '大腿後側與下背', steps: '坐在地板上雙腿伸直，身體前傾雙手去抓腳尖。', tips: '保持膝蓋微曲，由髖部帶動前傾而非拱背。' },
-            { name: '貓牛式伸展 (Cat-Cow Stretch)', target: '脊椎靈活度與下背放鬆', steps: '四足跪姿吸氣拱背低頭(貓式)，吐氣塌腰抬頭(牛式)。', tips: '配合呼吸緩慢流暢地伸展脊椎。' },
-            { name: '胸大肌門框伸展 (Doorway Chest Stretch)', target: '胸肌與前三角肌釋放', steps: '手肘貼住門框身體向前跨出感受胸肌拉伸。', tips: '有助於改善圓肩與駝背姿勢。' },
-            { name: '嬰兒式放鬆 (Child Pose)', target: '下背部與臀肌極致放鬆', steps: '跪坐於腳跟上，雙手向前伸展趴地休息。', tips: '深呼吸感受背部與腰椎徹底釋放壓力。' },
-            { name: '鴿子式臀部伸展 (Pigeon Pose)', target: '臀大肌與髖關節深層', steps: '單腿向前屈膝橫放，後腿向後伸直向下壓髖。', tips: '有效釋放久坐或深蹲後的臀部緊繃。' },
-            { name: '四頭肌站姿伸展 (Standing Quad Stretch)', target: '大腿前側股四頭肌', steps: '單腳站立一手向後拉住同側腳踝貼近臀部。', tips: '膝蓋併攏保持身體平衡直立。' },
-            { name: '下犬式伸展 (Downward-Facing Dog)', target: '後側鏈與小腿跟腱', steps: '手腳撐地臀部向上推高呈倒V字。', tips: '腳跟盡量踩向地面拉伸小腿與後側。' },
-            { name: '坐姿脊椎旋轉伸展 (Seated Spinal Twist)', target: '腹斜肌與腰椎靈活性', steps: '坐姿單腿跨過另一腿，身體向對側旋轉。', tips: '旋轉時配合吐氣增加延展感。' },
-            { name: '肩關節十字交叉伸展 (Cross-Body Shoulder Stretch)', target: '三角肌後束與肩胛', steps: '單臂橫越胸前，用另一手向身體內側輕壓。', tips: '保持肩膀下沉不要聳肩。' },
-            { name: '上背穿針引線式 (Thread the Needle)', target: '上背與菱形肌伸展', steps: '四足跪姿將單手向對側下方穿出貼地。', tips: '感受肩胛骨之間的肌肉徹底打開。' },
-            { name: '仰臥膝抱胸 (Knees-to-Chest Stretch)', target: '下背與薦髂關節放鬆', steps: '仰臥平躺雙手抱膝靠近胸口。', tips: '溫和釋放下背部壓力。' },
-            { name: '坐姿開胯蝴蝶式 (Butterfly Stretch)', target: '髖內收肌與腹股溝', steps: '坐姿雙腳腳底相對，膝蓋向外打開下壓。', tips: '背部挺直感受大腿內側拉伸。' },
-            { name: '站姿側腰伸展 (Standing Side Stretch)', target: '腰方肌與腹斜肌', steps: '雙手舉高過頭向單側傾斜身體。', tips: '骨盆固定不要跟著歪斜。' },
-            { name: '動態跨步世界最偉大伸展 (World Greatest Stretch)', target: '全身綜合動態伸展', steps: '弓步下蹲並將同側手肘觸地向上旋轉胸椎。', tips: '結合髖關節與胸椎的完美伸展。' },
-            { name: '小腿階梯踩踏伸展 (Calf Stair Stretch)', target: '腓腸肌與比目魚肌', steps: '前腳掌踩在階梯邊緣，腳跟向下沈落。', tips: '伸展小腿後側緊繃感。' },
-            { name: '仰臥梨狀肌伸展 (Figure Four Stretch)', target: '臀深層梨狀肌', steps: '仰臥屈膝，將一腳踝放在另一膝蓋上向胸口拉。', tips: '緩解臀部與坐骨神經緊繃。' },
-            { name: '跪姿髖屈肌伸展 (Kneeling Hip Flexor Stretch)', target: '髖屈肌與髂腰肌', steps: '單膝跪地骨盆向前推感受前側髖部伸展。', tips: '改善久坐造成的髖關節緊繃。' },
-            { name: '三頭肌過頂伸展 (Overhead Tricep Stretch)', target: '肱三頭肌與肩袖', steps: '單臂舉起屈肘向後，另一手輕壓手肘向下。', tips: '伸展手臂後側與肩膀外側。' },
-            { name: '動態手臂繞環 (Arm Circles)', target: '肩關節滑液分泌與熱身', steps: '雙臂向前後進行大圓周繞環動作。', tips: '動作由小到大溫和活動肩關節。' },
-            { name: '大休息癱瘓式 (Corpse Pose / Savasana)', target: '神經系統全面放鬆', steps: '平躺全身放鬆，閉眼進行深沉腹式呼吸。', tips: '讓身心完全沉澱進入恢復期。' }
-        ];
-
-        const exerciseDB = {
-            home: {
-                chest: baseChest,
-                back: baseBack,
-                legs: baseLegs,
-                shoulders: baseShoulders,
-                biceps: baseBiceps,
-                triceps: baseTriceps,
-                abs: baseAbs,
-                stretching: baseStretching,
-                fullbody: [
-                    { name: '啞鈴高腳盃深蹲', target: '下半身', steps: '托住啞鈴深蹲。', tips: '保持呼吸順暢。' },
-                    { name: '仰臥啞鈴地板臥推', target: '胸大肌、三頭肌', steps: '仰臥推舉。', tips: '保持核心穩定。' },
-                    { name: '單臂啞鈴俯身划船', target: '背闊肌', steps: '單手划船。', tips: '夾緊背肌。' },
-                    { name: '坐姿啞鈴肩推', target: '三角肌', steps: '坐姿肩推。', tips: '核心收緊。' }
-                ]
-            },
-            gym: {
-                chest: baseChest,
-                back: baseBack,
-                legs: baseLegs,
-                shoulders: baseShoulders,
-                biceps: baseBiceps,
-                triceps: baseTriceps,
-                abs: baseAbs,
-                stretching: baseStretching,
-                fullbody: [
-                    { name: '滑輪下拉', target: '背部', steps: '下拉訓練。', tips: '背肌發力。' },
-                    { name: '槓片式平胸推機', target: '胸部', steps: '胸推訓練。', tips: '沉肩挺胸。' },
-                    { name: '槓片式斜向腿推蹬機', target: '腿部', steps: '腿推訓練。', tips: '膝蓋不鎖死。' },
-                    { name: '槓片式肩推機', target: '肩部', steps: '肩推訓練。', tips: '核心收緊。' }
-                ]
-            }
+        const db = {
+            chest: [
+                { name: '槓片式上斜推胸機', target: '上胸肌', steps: '將槓片裝載至機器兩側，背部緊貼椅凳，發力向前推舉。', tips: '推起時吐氣，感受上胸收縮。' },
+                { name: '槓片式平胸推機', target: '胸大肌整體', steps: '裝載槓片後握住水平把手，向前推展。', tips: '沉肩挺胸，切勿聳肩。' },
+                { name: '槓片式下斜推胸機', target: '胸大肌下緣', steps: '坐於下斜槓片機向前下方推舉。', tips: '針對胸肌下束輪廓。' },
+                { name: '史密斯上斜臥推', target: '上胸肌、三頭肌', steps: '調整上斜椅至30-45度，雙手握住史密斯槓鈴推起。', tips: '手肘保持微曲不鎖死。' },
+                { name: '史密斯平凳臥推', target: '胸大肌整體力量', steps: '於史密斯架平凳上進行槓鈴臥推。', tips: '軌道固定安全。' },
+                { name: '史密斯下斜臥推', target: '胸大肌下束', steps: '於下斜凳史密斯架上進行臥推。', tips: '強力刺激胸肌下緣。' },
+                { name: '滑輪夾胸 (Cable Crossover)', target: '胸大肌內側', steps: '雙手握住高位滑輪把手向前下方夾緊。', tips: '頂峰收縮1秒。' },
+                { name: '坐姿胸推機', target: '胸大肌整體', steps: '坐在器械上推動把手向前伸展。', tips: '沉肩發力。' },
+                { name: '蝴蝶機夾胸 (Pec Deck)', target: '胸大肌中縫', steps: '前臂緊貼靠墊向中央合攏。', tips: '感受深刻擠壓。' },
+                { name: '自由槓鈴臥推', target: '胸大肌力量', steps: '仰臥平凳握槓下放至胸口推起。', tips: '注意保護架安全。' },
+                { name: '槓鈴上斜臥推', target: '上胸肌肥大', steps: '上斜凳上進行自由槓鈴臥推。', tips: '打造飽滿上胸。' },
+                { name: '槓鈴下斜臥推', target: '胸大肌下緣', steps: '下斜凳上進行槓鈴臥推。', tips: '強調下胸厚度。' },
+                { name: '雙槓臂屈伸 (Dips)', target: '胸肌下緣', steps: '雙杠支撐身體前傾屈肘下放再推起。', tips: '身體前傾強化胸肌。' },
+                { name: '低位滑輪夾胸', target: '上胸肌雕塑', steps: '由低位滑輪向上斜上方夾胸。', tips: '塑造飽滿上胸。' },
+                { name: '單臂坐姿胸推機', target: '單側胸肌孤立', steps: '使用單側胸推機輪流推舉。', tips: '矯正左右肌力差。' },
+                { name: '高位滑輪夾胸', target: '胸大肌下部', steps: '由高位滑輪向下斜向夾胸。', tips: '收緊下胸輪廓。' },
+                { name: '槓片式坐姿飛鳥機', target: '胸大肌外側', steps: '坐在槓片飛鳥機上夾胸。', tips: '維持全程穩定張力。' },
+                { name: '啞鈴上斜臥推', target: '上胸肌', steps: '躺在30度上斜凳持啞鈴推舉。', tips: '動作幅度更大。' },
+                { name: '啞鈴平凳臥推', target: '胸大肌平衡', steps: '平凳啞鈴臥推。', tips: '鍛鍊穩定度。' },
+                { name: '啞鈴上斜飛鳥', target: '上胸外側', steps: '上斜凳上持啞鈴做開合飛鳥。', tips: '感受極致拉伸。' },
+                { name: '壺鈴地心引力胸推', target: '壺鈴胸肌', steps: '手持壺鈴進行臥推。', tips: '刺激深層纖維。' },
+                { name: '慢速離心胸推機', target: '胸肌肌肥大', steps: '胸推機推回過程放慢至4秒。', tips: '最大化肌肥大。' },
+                { name: '坐姿斜向推胸機', target: '多角度胸肌', steps: '調整器械角度推胸。', tips: '全方位刺激。' },
+                { name: '輔助雙槓臂屈伸機', target: '胸肌輔助', steps: '膝蓋跪在輔助墊上雙槓下壓。', tips: '適合初中級。' },
+                { name: '單臂滑輪夾胸', target: '單側胸肌中縫', steps: '單手抓滑輪向對側夾緊。', tips: '極致收縮。' },
+                { name: '水平滑輪推胸', target: '抗旋胸推', steps: '站立面對滑輪向前推舉。', tips: '結合核心。' },
+                { name: '槓鈴廣角臥推', target: '胸大肌外側', steps: '較寬握距平凳臥推。', tips: '加強外側伸展。' },
+                { name: '器械平胸夾胸結合機', target: '推夾綜合', steps: '結合推舉與夾胸軌道。', tips: '全面轟炸。' },
+                { name: '啞鈴下斜臥推', target: '胸肌下束', steps: '下斜凳啞鈴臥推。', tips: '強調下胸輪廓。' },
+                { name: '超級組滑輪夾胸', target: '胸肌極限充血', steps: '高低位滑輪夾胸連做。', tips: '達到訓練巔峰。' }
+            ],
+            back: [
+                { name: '槓片式斜板划船機', target: '中背肌、厚度', steps: '胸部緊貼靠墊向後拉動把手。', tips: '夾緊肩胛骨。' },
+                { name: '槓片式高位下拉機', target: '背闊肌', steps: '雙手握住獨立把手下拉至胸口。', tips: '左右獨立發力。' },
+                { name: '槓片式水平划船機', target: '背部厚度', steps: '坐在機台前胸貼靠墊向後拉。', tips: '肘尖貼近身體。' },
+                { name: '滑輪下拉 (Lat Pulldown)', target: '背闊肌、上背', steps: '寬握把手拉向鎖骨下方。', tips: '挺胸沉肩。' },
+                { name: '坐姿纜繩划船', target: '中背肌、菱形肌', steps: '坐在滑輪機前將把手拉向腹部。', tips: '收緊肩胛骨。' },
+                { name: '直臂下压', target: '背闊肌下緣', steps: '直桿向下壓至大腿。', tips: '全程保持手臂微曲。' },
+                { name: '引體向上輔助機', target: '背闊肌', steps: '膝蓋跪於輔助墊上引體向上。', tips: '借助輔助發力。' },
+                { name: '單臂滑輪下拉', target: '背闊肌單側', steps: '單手抓滑輪把手下拉。', tips: '拉至髖部。' },
+                { name: '坐姿V把下拉', target: '背闊肌中下束', steps: '使用V型窄把進行下拉。', tips: '背部更加挺拔。' },
+                { name: '坐姿高位直臂划船', target: '上背斜方肌', steps: '高位滑輪寬握向臉部拉動。', tips: '強化上背。' },
+                { name: '槓鈴俯身划船', target: '背部整體厚度', steps: '站立俯身雙手握槓拉向腹部。', tips: '核心收緊背部平直。' },
+                { name: '單臂啞鈴划船', target: '背闊肌與厚度', steps: '單手單膝撐凳進行啞鈴划船。', tips: '動作幅度完全拉伸。' },
+                { name: '反手滑輪下拉', target: '背闊肌下束', steps: '反手握把手下拉至胸口。', tips: '強化下背。' },
+                { name: '坐姿寬把水平划船', target: '中背菱形肌', steps: '使用寬橫把進行坐姿划船。', tips: '手肘向外打開。' },
+                { name: '史密斯俯身划船', target: '固定軌道划船', steps: '於史密斯架上進行槓鈴划船。', tips: '軌道穩定。' },
+                { name: '高位滑輪單臂划船', target: '背闊肌單側拉力', steps: '單手拉動高位滑輪。', tips: '增加行程。' },
+                { name: '超人式羅馬椅背屈伸', target: '下背豎脊肌', steps: '羅馬椅負重背屈伸。', tips: '強化後側鏈。' },
+                { name: '坐姿繩索面拉划船', target: '上背後三角', steps: '用繩索拉向面部結合划船。', tips: '改善姿態。' },
+                { name: '坐姿直臂下拉機', target: '背闊肌孤立', steps: '坐於專用機台下壓。', tips: '精準感受背闊。' },
+                { name: '槓片式高位下拉交替', target: '背部高強度', steps: '交替下拉槓片下拉機。', tips: '極致充血。' },
+                { name: '自由單槓引體向上', target: '自重王牌', steps: '徒手雙手寬握單槓引體。', tips: '黃金動作。' },
+                { name: '反手單槓引體向上', target: '二頭協同', steps: '反手握單槓向上拉起。', tips: '增強二頭發力。' },
+                { name: '平行握引體向上', target: '中下束', steps: '使用平行把手向上拉起。', tips: '關節壓力小。' },
+                { name: '地雷架單臂划船', target: '地雷架厚度', steps: '單手握地雷桿俯身划船。', tips: '獨特弧形軌跡。' },
+                { name: '坐姿下壓背闊肌機', target: '背闊下束', steps: '坐於專用下壓機推動把手。', tips: '強化倒三角。' },
+                { name: '坐姿雙向划船機', target: '中背肌', steps: '坐於雙向划船機向後拉。', tips: '全面覆蓋。' },
+                { name: '仰臥槓鈴拉起', target: '自重上背', steps: '仰臥於槓鈴下方拉起。', tips: '初中級首選。' },
+                { name: '史密斯反手下拉', target: '固定軌道下拉', steps: '於史密斯架下方反手拉。', tips: '軌道安全。' },
+                { name: '纜繩交叉高位下拉', target: '多角度收縮', steps: '雙滑輪交叉下拉。', tips: '末端交叉收縮。' },
+                { name: '超級組背部充血', target: '極限肌肥大', steps: '下拉划船連續交替。', tips: '打造厚實背部。' }
+            ],
+            legs: [
+                { name: '槓片式斜向腿推蹬機', target: '大腿前側、臀大肌', steps: '雙腳踩踏板下放至90度再推回。', tips: '膝蓋切勿完全鎖死。' },
+                { name: '槓片式哈克深蹲機', target: '股四頭肌', steps: '背部與肩膀緊貼靠墊進行深蹲。', tips: '適合大重量衝刺。' },
+                { name: '史密斯機器深蹲', target: '股四頭肌、臀大肌', steps: '扛槓穩定下蹲至大腿平行地面。', tips: '軌道固定安全。' },
+                { name: '坐姿腿推蹬機', target: '大腿前側', steps: '雙腳踩踏板推回。', tips: '呼吸平穩。' },
+                { name: '坐姿腿伸展機', target: '股四頭肌', steps: '小腿向上踢直。', tips: '頂點停留2秒。' },
+                { name: '趴姿腿屈曲機', target: '膕繩肌', steps: '向後勾起小腿。', tips: '下放保持張力。' },
+                { name: '坐姿內收肌訓練機', target: '大腿內側', steps: '坐機台上雙腿向內夾緊。', tips: '感受內收發力。' },
+                { name: '坐姿外展肌訓練機', target: '臀中肌', steps: '坐機台上雙腿向外推開。', tips: '強化臀部外側。' },
+                { name: '站姿小腿提踵機', target: '小腿腓腸肌', steps: '肩膀頂住靠墊進行提踵。', tips: '充分拉伸小腿。' },
+                { name: '槓鈴臀推', target: '臀大肌王牌', steps: '背靠平凳骨盆扛槓做臀部頂起。', tips: '頂點收縮極限。' },
+                { name: '坐姿小腿提踵機', target: '比目魚肌', steps: '膝蓋壓槓片提踵。', tips: '針對小腿厚度。' },
+                { name: '保加利亞分腿蹲', target: '單腿臀腿', steps: '後腳置於凳上單腿下蹲。', tips: '孤立刺激。' },
+                { name: '槓鈴羅馬尼亞硬舉', target: '後側鏈肌群', steps: '雙手握槓進行RDL硬舉。', tips: '背部絕對平直。' },
+                { name: '槓鈴傳統硬舉', target: '全身核心', steps: '地面提起槓鈴至直立。', tips: '髖關節主導發力。' },
+                { name: '坐姿腿後勾機', target: '膕繩肌', steps: '坐在機台向前勾小腿。', tips: '強力泵感。' },
+                { name: '纜繩下拉後踢腿', target: '臀大肌雕塑', steps: '腳踝繫滑輪向後高抬腿。', tips: '頂峰收縮。' },
+                { name: '側向滑輪深蹲走', target: '臀中肌耐力', steps: '腰部繫纜繩側向移動。', tips: '持續燃燒。' },
+                { name: '深蹲架自由深蹲', target: '自由重量王者', steps: '深蹲架扛槓自由深蹲。', tips: '下肢肌力養成。' },
+                { name: '史密斯弓步蹲', target: '固定軌道單腿', steps: '史密斯槓下進行前後弓步。', tips: '軌道安全。' },
+                { name: '登階負重訓練', target: '功能性下肢', steps: '手持啞鈴登階。', tips: '提升協調性。' },
+                { name: '槓片式立式腿推機', target: '垂直腿推', steps: '仰臥垂直向上推舉。', tips: '極高下肢負荷。' },
+                { name: '槓鈴前蹲舉', target: '股四頭肌垂直', steps: '槓鈴置於鎖骨前方深蹲。', tips: '軀幹直立。' },
+                { name: '健步蹲 (Lunges)', target: '動態臀腿', steps: '持啞鈴向前交替弓步走。', tips: '極佳心肺耐力。' },
+                { name: '地雷架深蹲', target: '地雷架下肢', steps: '雙手抱地雷桿深蹲。', tips: '對腰椎更友善。' },
+                { name: '史密斯相撲深蹲', target: '內收肌群', steps: '寬站姿相撲深蹲。', tips: '專注大腿內側。' },
+                { name: '單腿腿推機', target: '單側平衡', steps: '腿推機單腳推蹬。', tips: '矯正左右腿力差。' },
+                { name: '坐姿髖外展夾腿機', target: '髖部綜合', steps: '夾腿與外展雙功能器械。', tips: '全面強化。' },
+                { name: '史密斯臀推', target: '固定軌道臀推', steps: '史密斯架下進行臀推。', tips: '架設便捷。' },
+                { name: '腿部高強度超級組', target: '極限充血', steps: '腿伸展與腿推機連做。', tips: '達到訓練巔峰。' }
+            ],
+            shoulders: [
+                { name: '槓片式肩推機', target: '三角肌前中束', steps: '坐於機台上向上推舉。', tips: '核心收緊。' },
+                { name: '坐姿啞鈴肩推', target: '三角肌前束', steps: '持啞鈴向上推舉至頭頂。', tips: '核心收緊防腰椎前凸。' },
+                { name: '滑輪面拉 (Face Pull)', target: '後三角肌', steps: '拉繩索至面部兩側。', tips: '手肘向外打開。' },
+                { name: '纜繩側平舉', target: '三角肌中束', steps: '單手向外舉起至肩膀高度。', tips: '張力均勻。' },
+                { name: '器械肩推機', target: '三角肌整體', steps: '握住把手向上推舉。', tips: '沉肩發力。' },
+                { name: '器械側平舉機', target: '三角肌中束', steps: '手臂靠墊向外推展。', tips: '孤立刺激。' },
+                { name: '槓鈴直立划船', target: '斜方肌中束', steps: '雙手寬握槓鈴向上提拉。', tips: '手肘高於手腕。' },
+                { name: '坐姿啞鈴側平舉', target: '中束孤立', steps: '坐在凳上側平舉。', tips: '避免身體甩動。' },
+                { name: '俯身纜繩側平舉', target: '後三角肌', steps: '交叉雙手拉動滑輪外展。', tips: '精準刺激。' },
+                { name: '立姿槓鈴推舉', target: '站姿肩力', steps: '站立將槓鈴推過頭頂。', tips: '考驗核心。' },
+                { name: '史密斯頸前肩推', target: '固定軌道肩推', steps: '史密斯架肩推。', tips: '安全大重量。' },
+                { name: '啞鈴俯身斜凳飛鳥', target: '後三角孤立', steps: '趴斜凳持啞鈴外展。', tips: '杜絕借力。' },
+                { name: '單臂纜繩前平舉', target: '前束孤立', steps: '單手拉滑輪向前平舉。', tips: '張力流暢。' },
+                { name: '槓片前平舉', target: '前束與核心', steps: '雙手夾槓片向前平舉。', tips: '握緊發力。' },
+                { name: '坐姿器械俯身飛鳥機', target: '後三角專項', steps: '胸貼靠墊向後展臂。', tips: '專門轟炸。' },
+                { name: '斜凳啞鈴前平舉', target: '前束孤立', steps: '靠斜凳前平舉。', tips: '避免軀幹借力。' },
+                { name: '高位滑輪單臂側平舉', target: '中束全行程', steps: '滑輪單臂側平舉。', tips: '底部保有張力。' },
+                { name: '壺鈴高位拉舉', target: '爆發力', steps: '爆發將壺鈴拉至胸前。', tips: '結合全身爆發。' },
+                { name: '慢速離心啞鈴肩推', target: '肩部肌肥大', steps: '肩推下放維持4秒。', tips: '最大化撕裂。' },
+                { name: '槓片式平面側平舉機', target: '側平舉固定', steps: '坐專用機向上外展。', tips: '完美阻力曲線。' },
+                { name: '地雷架肩推', target: '單側功能性', steps: '單手握地雷桿斜上推。', tips: '對肩膀極為友善。' },
+                { name: '坐姿雙向滑輪面拉', target: '高強度後三角', steps: '雙滑輪交叉面拉。', tips: '改善駝背。' },
+                { name: '啞鈴路易斯側平舉', target: '多角度中束', steps: '變換手腕角度平舉。', tips: '全方位刺激。' },
+                { name: '史密斯聳肩', target: '斜方肌', steps: '史密斯架大重量聳肩。', tips: '打造厚實斜方。' },
+                { name: '纜繩直立划船', target: '斜方與中束', steps: '低位滑輪向上直立拉。', tips: '張力滑順。' },
+                { name: '單臂地雷架肩推', target: '單側爆發', steps: '單手爆發推起地雷桿。', tips: '提升穩定度。' },
+                { name: '坐姿阿諾肩推', target: '阿諾旋轉', steps: '經典旋轉軌道肩推。', tips: '全面徵召。' },
+                { name: '槓鈴頸後肩推', target: '進階肩部', steps: '槓鈴置於頸後上推。', tips: '需良好活動度。' },
+                { name: '肩膀超級組', target: '極限充血', steps: '肩推機與側平舉機連做。', tips: '達到訓練巔峰。' }
+            ],
+            biceps: [
+                { name: '滑輪站姿二頭彎舉', target: '肱二頭肌', steps: '面對低位滑輪向上彎舉。', tips: '恆定張力。' },
+                { name: '牧師椅槓鈴彎舉', target: '肱二頭肌短頭', steps: '手臂靠在斜墊上持曲桿彎舉。', tips: '鎖死肩膀。' },
+                { name: '上斜凳啞鈴彎舉', target: '肱二頭肌長頭', steps: '躺在斜凳上向下垂懸彎舉。', tips: '極致拉伸。' },
+                { name: '坐姿啞鈴錘式彎舉', target: '肱肌', steps: '掌心相對向上提起。', tips: '增加厚度。' },
+                { name: '器械二頭肌彎舉機', target: '孤立訓練', steps: '坐在二頭機上彎舉。', tips: '完美孤立。' },
+                { name: '專心彎舉', target: '頂峰雕塑', steps: '單肘抵住大腿內側彎舉。', tips: '打造頂峰。' },
+                { name: '蜘蛛彎舉', target: '短頭泵感', steps: '胸腹貼斜凳背面彎舉。', tips: '垂直向下起步。' },
+                { name: '槓鈴站姿二頭彎舉', target: '整體力量', steps: '站姿雙手握槓向上彎舉。', tips: '大重量基礎。' },
+                { name: '反手槓鈴彎舉', target: '前臂與肱肌', steps: '反手握槓向下彎舉。', tips: '強化前臂。' },
+                { name: '啞鈴21響法彎舉', target: '極限泵感', steps: '分段半程與全程操作。', tips: '乳酸堆積強烈。' },
+                { name: '槓片式二頭彎舉機', target: '雙向二頭', steps: '坐槓片二頭機彎舉。', tips: '優異抗阻曲線。' },
+                { name: '雙纜繩交叉二頭彎舉', target: '二頭夾擊', steps: '雙滑輪中央交叉彎舉。', tips: '頂點飽滿。' },
+                { name: '地雷架二頭彎舉', target: '斜向抗阻', steps: '單手握地雷桿向上彎舉。', tips: '獨特抗阻發力。' },
+                { name: '史密斯牧師椅彎舉', target: '固定軌道', steps: '史密斯架下配合牧師椅。', tips: '安全極限。' },
+                { name: '站姿曲桿大重量', target: '曲桿力量', steps: 'EZ曲桿大重量彎舉。', tips: '手腕更舒適。' }
+            ],
+            triceps: [
+                { name: '滑輪三頭肌下壓', target: '三頭肌整體', steps: '面對滑輪向下壓伸手臂。', tips: '上臂夾緊軀幹。' },
+                { name: '仰臥槓鈴臂屈伸', target: '三頭肌長頭', steps: '平躺持桿向額頭下方屈肘推起。', tips: '肘關節朝前。' },
+                { name: '過頂纜繩臂屈伸', target: '三頭肌長頭極致', steps: '背對滑輪向前上方推出。', tips: '長頭極致伸展。' },
+                { name: '器械三頭肌屈伸機', target: '三頭肌孤立', steps: '坐於三頭機向前推動。', tips: '固定軌道高效。' },
+                { name: '雙槓臂屈伸', target: '三頭肌與胸肌', steps: '雙槓支撐身體上下屈伸。', tips: '身體保持直立。' },
+                { name: '窄距槓鈴臥推', target: '大重量三頭', steps: '平躺窄握距槓鈴臥推。', tips: '手距與肩同寬。' },
+                { name: '單臂滑輪反手下壓', target: '內側頭專項', steps: '單手反手握滑輪下壓。', tips: '強調內側線條。' },
+                { name: '啞鈴俯身踢腿', target: '分離度雕塑', steps: '單手支撐持啞鈴向後踢。', tips: '頂點停留1秒。' },
+                { name: '史密斯窄距臥推', target: '固定軌道推舉', steps: '史密斯架窄距臥推。', tips: '安全挑戰重量。' },
+                { name: 'V字把三頭下壓', target: '外側頭', steps: 'V型把手滑輪下壓。', tips: '末端外旋收縮。' },
+                { name: '槓片式三頭肌推舉機', target: '大重量推舉', steps: '坐於槓片三頭機推展。', tips: '極佳抗阻力。' },
+                { name: '雙纜繩交叉三頭下壓', target: '三頭夾擊', steps: '雙滑輪交叉向下壓伸。', tips: '末端增加外側收縮。' },
+                { name: '上斜凳啞鈴過頂伸展', target: '長頭拉伸', steps: '上斜凳持啞鈴向後下放。', tips: '更大活動範圍。' },
+                { name: '史密斯反手窄距臥推', target: '反手三頭', steps: '史密斯架反手窄距臥推。', tips: '加強上胸與三頭。' },
+                { name: '三頭肌超級組', target: '極限泵感', steps: '下壓與過頂伸展連做。', tips: '打造粗壯手臂。' }
+            ],
+            abs: [
+                { name: '滑輪跪姿捲腹', target: '腹直肌強力收縮', steps: '雙膝跪地抱繩向下捲起上身。', tips: '用腹肌發力。' },
+                { name: '懸垂舉腿', target: '下腹與核心', steps: '懸掛單槓雙腿向上抬起。', tips: '控制下放速度。' },
+                { name: '羅馬椅側屈', target: '腹斜肌', steps: '側身固定於羅馬椅下放拉起。', tips: '保持身體同平面。' },
+                { name: '仰臥起坐斜板', target: '腹直肌全段', steps: '固定於下斜板上進行捲腹。', tips: '感受腹部張力。' },
+                { name: '棒式核心支撐', target: '深層核心', steps: '前臂與腳尖撐地呈一直線。', tips: '切勿塌腰。' },
+                { name: '抗力球捲腹', target: '核心穩定', steps: '背躺抗力球上做捲腹。', tips: '強化深層核心。' },
+                { name: '船式靜態支撐', target: '腹橫肌', steps: '坐姿後仰與雙腿離地呈V字。', tips: '呼吸平穩。' },
+                { name: '器械腹部捲腹機', target: '專項抗阻', steps: '坐捲腹機向前推動靠墊。', tips: '抗阻力訓練。' },
+                { name: '滑輪側向屈體', target: '強力腹斜肌', steps: '側向拉動滑輪砍木動作。', tips: '鍛鍊側腹。' },
+                { name: 'Ab Wheel 腹肌輪', target: '核心極限', steps: '跪地持腹肌輪向前推展。', tips: '腰椎絕對不可塌。' }
+            ],
+            stretching: [
+                { name: '坐姿前彎腿後側伸展', target: '大腿後側', steps: '雙腿伸直身體前傾抓腳尖。', tips: '由髖部帶動前傾。' },
+                { name: '貓牛式伸展', target: '脊椎靈活度', steps: '四足跪姿拱背與塌腰交替。', tips: '配合呼吸。' },
+                { name: '胸大肌門框伸展', target: '胸肌釋放', steps: '手肘貼門框身體向前跨出。', tips: '改善圓肩。' },
+                { name: '嬰兒式放鬆', target: '下背部放鬆', steps: '跪坐於腳跟上向前伸展。', tips: '深呼吸釋放壓力。' },
+                { name: '鴿子式臀部伸展', target: '臀大肌深層', steps: '單腿向前屈膝橫放壓髖。', tips: '釋放臀部緊繃。' },
+                { name: '四頭肌站姿伸展', target: '大腿前側', steps: '單腳站立後拉腳踝貼臀。', tips: '膝蓋併攏直立。' },
+                { name: '下犬式伸展', target: '後側鏈與小腿', steps: '手腳撐地臀部向上推高。', tips: '腳跟踩向地面。' },
+                { name: '坐姿脊椎旋轉伸展', target: '腰椎靈活', steps: '單腿跨過對側身體旋轉。', tips: '配合吐氣延展。' },
+                { name: '肩關節十字交叉', target: '三角肌後束', steps: '單臂橫越胸前輕壓。', tips: '肩膀下沉不聳肩。' },
+                { name: '上背穿針引線式', target: '菱形肌伸展', steps: '四足跪姿單手向對側穿出。', tips: '打開上背。' }
+            ]
         };
 
         const weekDays = [
-            { id: 'mon', label: '星期一 (Mon)', jsDay: 1 },
-            { id: 'tue', label: '星期二 (Tue)', jsDay: 2 },
-            { id: 'wed', label: '星期三 (Wed)', jsDay: 3 },
-            { id: 'thu', label: '星期四 (Thu)', jsDay: 4 },
-            { id: 'fri', label: '星期五 (Fri)', jsDay: 5 },
-            { id: 'sat', label: '星期六 (Sat)', jsDay: 6 },
-            { id: 'sun', label: '星期日 (Sun)', jsDay: 0 }
+            { id: 'mon', label: '星期一', jsDay: 1 },
+            { id: 'tue', label: '星期二', jsDay: 2 },
+            { id: 'wed', label: '星期三', jsDay: 3 },
+            { id: 'thu', label: '星期四', jsDay: 4 },
+            { id: 'fri', label: '星期五', jsDay: 5 },
+            { id: 'sat', label: '星期六', jsDay: 6 },
+            { id: 'sun', label: '星期日', jsDay: 0 }
         ];
 
-        let currentEnv = 'home';
         let currentGoal = 'hypertrophy';
-        let customEnv = 'home';
         let customExercises = [];
         let currentSplitCategory = 'chest';
         let weeklyPlan = JSON.parse(localStorage.getItem('weekly_plan') || JSON.stringify({
-            mon: 'chest',
-            tue: 'back',
-            wed: 'stretching',
-            thu: 'legs',
-            fri: 'shoulders',
-            sat: 'biceps',
-            sun: 'rest'
+            mon: 'chest', tue: 'back', wed: 'stretching', thu: 'legs', fri: 'shoulders', sat: 'biceps', sun: 'rest'
         }));
 
         let activeTimer = null;
-        let sessionData = {
-            exercises: [],
-            currentIndex: 0,
-            currentSet: 1,
-            totalSets: 3,
-            timeLeft: 45,
-            isResting: false,
-            isPaused: false,
-            startTime: null
-        };
+        let sessionData = { exercises: [], currentIndex: 0, currentSet: 1, totalSets: 3, timeLeft: 45, isResting: false, isPaused: false, startTime: null };
 
-        window.onload = function() {
+        document.addEventListener('DOMContentLoaded', () => {
             calculateMetrics();
-            updateCustomExerciseDropdown();
-            renderWeeklySchedule();
-            detectTodayWorkout();
+            updateCustDropdown();
+            renderWeekly();
+            detectToday();
+
+            // 綁定導覽按鈕
+            document.getElementById('tab-gen').addEventListener('click', () => switchView('generator'));
+            document.getElementById('tab-week').addEventListener('click', () => switchView('weekly'));
+            document.getElementById('tab-cust').addEventListener('click', () => switchView('custom'));
+            document.getElementById('tab-hist').addEventListener('click', () => switchView('history'));
+
+            // 目標與啟動
+            document.getElementById('goal-hyp').addEventListener('click', () => setGoal('hypertrophy'));
+            document.getElementById('goal-fat').addEventListener('click', () => setGoal('fatloss'));
+            document.getElementById('btn-launch-today').addEventListener('click', launchToday);
+            document.getElementById('btn-generate').addEventListener('click', generateWorkout);
+            document.getElementById('btn-reset').addEventListener('click', resetAll);
+            document.getElementById('btn-back-setup').addEventListener('click', resetAll);
+            document.getElementById('btn-quit').addEventListener('click', quitSession);
+            document.getElementById('btn-pause').addEventListener('click', togglePause);
+            document.getElementById('btn-skip').addEventListener('click', skipSet);
+
+            document.getElementById('btn-save-weekly').addEventListener('click', saveWeekly);
+            document.getElementById('cust-cat').addEventListener('change', updateCustDropdown);
+            
+            // 綁定「加入自訂清單」按鈕事件
+            document.getElementById('btn-add-cust').addEventListener('click', addCustEx);
+            document.getElementById('btn-start-cust').addEventListener('click', startCustSession);
+
+            document.getElementById('modal-close').addEventListener('click', closeModal);
+
             ['input-height', 'input-weight', 'input-age', 'input-gender'].forEach(id => {
                 document.getElementById(id).addEventListener('input', calculateMetrics);
             });
-        };
+        });
 
         function setGoal(goal) {
             currentGoal = goal;
-            document.getElementById('goal-hypertrophy').className = goal === 'hypertrophy' ? 'py-2.5 rounded-xl text-xs font-bold border border-accent bg-accent/20 text-accent transition' : 'py-2.5 rounded-xl text-xs font-bold border border-slate-700 bg-slate-900 text-slate-400 transition';
-            document.getElementById('goal-fatloss').className = goal === 'fatloss' ? 'py-2.5 rounded-xl text-xs font-bold border border-accent bg-accent/20 text-accent transition' : 'py-2.5 rounded-xl text-xs font-bold border border-slate-700 bg-slate-900 text-slate-400 transition';
+            document.getElementById('goal-hyp').className = goal === 'hypertrophy' ? 'py-2.5 rounded-xl text-xs font-bold border border-sky-400 bg-sky-400/20 text-sky-400 transition' : 'py-2.5 rounded-xl text-xs font-bold border border-slate-700 bg-slate-900 text-slate-400 transition';
+            document.getElementById('goal-fat').className = goal === 'fatloss' ? 'py-2.5 rounded-xl text-xs font-bold border border-sky-400 bg-sky-400/20 text-sky-400 transition' : 'py-2.5 rounded-xl text-xs font-bold border border-slate-700 bg-slate-900 text-slate-400 transition';
         }
 
-        function detectTodayWorkout() {
-            const now = new Date();
-            const jsDay = now.getDay();
-            const currentDayObj = weekDays.find(d => d.jsDay === jsDay) || weekDays[0];
-            
-            const splitKey = weeklyPlan[currentDayObj.id] || 'rest';
-            const splitNames = {
-                chest: '🔥 胸部訓練 (Chest)',
-                back: '🦍 背部訓練 (Back)',
-                legs: '🦵 腿部訓練 (Legs)',
-                shoulders: '🦾 肩部訓練 (Shoulders)',
-                biceps: '💪 二頭肌訓練 (Biceps)',
-                triceps: '🦾 三頭肌訓練 (Triceps)',
-                abs: '⚡ 腹肌核心 (Abs)',
-                stretching: '🧘 伸展恢復 (Stretching)',
-                fullbody: '⚡ 全身綜合 (Full Body)',
-                rest: '💤 休息日 (Rest)'
-            };
-
-            const dayNames = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-            document.getElementById('today-date-text').innerText = `今天是 ${dayNames[jsDay]}`;
-            document.getElementById('today-plan-label').innerText = `今日排定：${splitNames[splitKey]}`;
-        }
-
-        function launchTodayWorkout() {
-            const now = new Date();
-            const jsDay = now.getDay();
-            const currentDayObj = weekDays.find(d => d.jsDay === jsDay) || weekDays[0];
-            const split = weeklyPlan[currentDayObj.id] || 'rest';
-
-            if (split === 'rest') {
-                alert('今天是好好休息恢復的Rest Day，祝你有個美好的一天！');
-                return;
-            }
-            document.getElementById('input-split').value = split;
-            switchTab('generator');
-            generateWorkout();
-        }
-
-        function switchTab(tab) {
+        function switchView(viewName) {
             if (activeTimer) {
-                if (!confirm("目前正在進行訓練中，切換頁面將會中斷計時，確定離開？")) return;
+                if (!confirm("目前正在計時中，確定離開？")) return;
                 clearInterval(activeTimer);
                 activeTimer = null;
             }
-            document.getElementById('tab-generator').classList.toggle('hidden', tab !== 'generator');
-            document.getElementById('tab-weekly').classList.toggle('hidden', tab !== 'weekly');
-            document.getElementById('tab-custom').classList.toggle('hidden', tab !== 'custom');
-            document.getElementById('tab-history').classList.toggle('hidden', tab !== 'history');
-            
-            document.getElementById('nav-btn-generator').className = tab === 'generator' ? 'px-2 py-1 rounded-lg text-xs font-medium bg-accent text-slate-950 transition whitespace-nowrap' : 'px-2 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap';
-            document.getElementById('nav-btn-weekly').className = tab === 'weekly' ? 'px-2 py-1 rounded-lg text-xs font-medium bg-accent text-slate-950 transition whitespace-nowrap' : 'px-2 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap';
-            document.getElementById('nav-btn-custom').className = tab === 'custom' ? 'px-2 py-1 rounded-lg text-xs font-medium bg-accent text-slate-950 transition whitespace-nowrap' : 'px-2 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap';
-            document.getElementById('nav-btn-history').className = tab === 'history' ? 'px-2 py-1 rounded-lg text-xs font-medium bg-accent text-slate-950 transition whitespace-nowrap' : 'px-2 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap';
+            document.getElementById('view-generator').classList.toggle('hidden', viewName !== 'generator');
+            document.getElementById('view-weekly').classList.toggle('hidden', viewName !== 'weekly');
+            document.getElementById('view-custom').classList.toggle('hidden', viewName !== 'custom');
+            document.getElementById('view-history').classList.toggle('hidden', viewName !== 'history');
+            document.getElementById('view-session').classList.add('hidden'); // 離開計時畫面
 
-            if (tab === 'history') {
-                renderHistory();
-            } else if (tab === 'weekly') {
-                renderWeeklySchedule();
-            }
-        }
+            document.getElementById('tab-gen').className = viewName === 'generator' ? 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-sky-400 text-slate-950 transition' : 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+            document.getElementById('tab-week').className = viewName === 'weekly' ? 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-sky-400 text-slate-950 transition' : 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+            document.getElementById('tab-cust').className = viewName === 'custom' ? 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-sky-400 text-slate-950 transition' : 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+            document.getElementById('tab-hist').className = viewName === 'history' ? 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-sky-400 text-slate-950 transition' : 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
 
-        function setEnvironment(env) {
-            currentEnv = env;
-            document.getElementById('env-home').className = env === 'home' ? 'py-2 rounded-xl text-xs font-medium border border-accent bg-accent/20 text-accent transition' : 'py-2 rounded-xl text-xs font-medium border border-slate-700 bg-slate-900 text-slate-400 transition';
-            document.getElementById('env-gym').className = env === 'gym' ? 'py-2 rounded-xl text-xs font-medium border border-accent bg-accent/20 text-accent transition' : 'py-2 rounded-xl text-xs font-medium border border-slate-700 bg-slate-900 text-slate-400 transition';
-        }
-
-        function setCustomEnv(env) {
-            customEnv = env;
-            document.getElementById('custom-env-home').className = env === 'home' ? 'py-1.5 rounded-lg text-xs font-medium border border-accent bg-accent/20 text-accent transition' : 'py-1.5 rounded-lg text-xs font-medium border border-slate-700 bg-slate-900 text-slate-400 transition';
-            document.getElementById('custom-env-gym').className = env === 'gym' ? 'py-1.5 rounded-lg text-xs font-medium border border-accent bg-accent/20 text-accent transition' : 'py-1.5 rounded-lg text-xs font-medium border border-slate-700 bg-slate-900 text-slate-400 transition';
-            updateCustomExerciseDropdown();
-        }
-
-        function updateCustomExerciseDropdown() {
-            const cat = document.getElementById('custom-category-select').value;
-            const exSelect = document.getElementById('custom-exercise-select');
-            exSelect.innerHTML = '';
-
-            const list = exerciseDB[customEnv][cat] || exerciseDB[customEnv].chest;
-            list.forEach((item, index) => {
-                exSelect.innerHTML += `<option value="${index}">${item.name} (${item.target})</option>`;
-            });
+            if (viewName === 'history') renderHistory();
+            if (viewName === 'weekly') renderWeekly();
         }
 
         function calculateMetrics() {
@@ -768,12 +507,8 @@
             const a = parseInt(document.getElementById('input-age').value) || 30;
             const gender = document.getElementById('input-gender').value;
 
-            const heightM = h / 100;
-            const bmi = (w / (heightM * heightM)).toFixed(1);
-
-            let bmr = (10 * w) + (6.25 * h) - (5 * a);
-            if (gender === 'male') bmr += 5;
-            else bmr -= 161;
+            const bmi = (w / Math.pow(h/100, 2)).toFixed(1);
+            let bmr = (10 * w) + (6.25 * h) - (5 * a) + (gender === 'male' ? 5 : -161);
             const tdee = Math.round(bmr * 1.375);
 
             document.getElementById('val-bmi').innerText = bmi;
@@ -781,143 +516,143 @@
             document.getElementById('val-tdee').innerText = tdee + ' kcal';
         }
 
-        function getYouTubeSearchURL(exerciseName) {
-            return `https://www.youtube.com/results?search_query=${encodeURIComponent(exerciseName + ' 標準動作教學')}`;
+        function detectToday() {
+            const jsDay = new Date().getDay();
+            const dayObj = weekDays.find(d => d.jsDay === jsDay) || weekDays[0];
+            const split = weeklyPlan[dayObj.id] || 'rest';
+            const names = { chest: '胸部', back: '背部', legs: '腿部', shoulders: '肩部', biceps: '二頭肌', triceps: '三頭肌', abs: '腹肌', stretching: '伸展恢復', fullbody: '全身綜合', rest: '休息日' };
+            const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
+            document.getElementById('today-date-text').innerText = `今天是 星期${dayNames[jsDay]}`;
+            document.getElementById('today-plan-label').innerText = `今日排定：${names[split] || '休息日'}`;
         }
 
-        function renderWeeklySchedule() {
-            const container = document.getElementById('weekly-schedule-list');
-            container.innerHTML = '';
-
-            const now = new Date();
-            const todayJsDay = now.getDay();
-
-            weekDays.forEach(day => {
-                const currentVal = weeklyPlan[day.id] || 'rest';
-                const isToday = day.jsDay === todayJsDay;
-                container.innerHTML += `
-                    <div class="bg-slate-900 rounded-xl p-3 border ${isToday ? 'border-accent shadow-md shadow-sky-950' : 'border-slate-800'} flex justify-between items-center text-xs">
-                        <span class="font-bold ${isToday ? 'text-accent' : 'text-slate-200'} w-28">${day.label} ${isToday ? '📍(今天)' : ''}</span>
-                        <div class="flex items-center space-x-2 flex-1 justify-end">
-                            <select id="select-day-${day.id}" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-accent">
-                                <option value="chest" ${currentVal === 'chest' ? 'selected' : ''}>🔥 胸部訓練 (20種)</option>
-                                <option value="back" ${currentVal === 'back' ? 'selected' : ''}>🦍 背部訓練 (20種)</option>
-                                <option value="legs" ${currentVal === 'legs' ? 'selected' : ''}>🦵 腿部訓練 (20種)</option>
-                                <option value="shoulders" ${currentVal === 'shoulders' ? 'selected' : ''}>🦾 肩部訓練 (20種)</option>
-                                <option value="biceps" ${currentVal === 'biceps' ? 'selected' : ''}>💪 二頭肌 (20種)</option>
-                                <option value="triceps" ${currentVal === 'triceps' ? 'selected' : ''}>🦾 三頭肌 (20種)</option>
-                                <option value="abs" ${currentVal === 'abs' ? 'selected' : ''}>⚡ 腹肌核心 (20種)</option>
-                                <option value="stretching" ${currentVal === 'stretching' ? 'selected' : ''}>🧘 伸展恢復 (20種)</option>
-                                <option value="fullbody" ${currentVal === 'fullbody' ? 'selected' : ''}>⚡ 全身綜合 (Full Body)</option>
-                                <option value="rest" ${currentVal === 'rest' ? 'selected' : ''}>💤 休息日 (Rest)</option>
-                            </select>
-                            <button onclick="launchDayWorkout('${day.id}')" class="bg-accent/20 hover:bg-accent/30 text-accent px-2.5 py-1.5 rounded-lg font-bold transition whitespace-nowrap">
-                                <i class="fa-solid fa-play mr-1"></i>開始
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function saveWeeklyPlan() {
-            weekDays.forEach(day => {
-                const val = document.getElementById(`select-day-${day.id}`).value;
-                weeklyPlan[day.id] = val;
-            });
-            localStorage.setItem('weekly_plan', JSON.stringify(weeklyPlan));
-            detectTodayWorkout();
-            alert('✅ 一週訓練排程已成功儲存！');
-        }
-
-        function launchDayWorkout(dayId) {
-            saveWeeklyPlan();
-            const split = weeklyPlan[dayId];
+        function launchToday() {
+            const jsDay = new Date().getDay();
+            const dayObj = weekDays.find(d => d.jsDay === jsDay) || weekDays[0];
+            const split = weeklyPlan[dayObj.id] || 'rest';
             if (split === 'rest') {
-                alert('今天是好好休息恢復的Rest Day，祝你有個美好的一天！');
+                alert('今天是休息日！');
                 return;
             }
             document.getElementById('input-split').value = split;
-            switchTab('generator');
+            switchView('generator');
             generateWorkout();
         }
 
-        function addSelectedCustomExercise() {
-            if (customExercises.length >= 4) {
-                alert('自訂課表每日最多只能新增4種動作！');
-                return;
-            }
-            const cat = document.getElementById('custom-category-select').value;
-            const index = parseInt(document.getElementById('custom-exercise-select').value);
-            const sets = parseInt(document.getElementById('custom-ex-sets').value) || (currentGoal === 'hypertrophy' ? 4 : 3);
-            const duration = parseInt(document.getElementById('custom-ex-duration').value) || (currentGoal === 'hypertrophy' ? 50 : 40);
+        function renderWeekly() {
+            const container = document.getElementById('weekly-schedule-list');
+            container.innerHTML = '';
+            const todayJsDay = new Date().getDay();
 
-            const selectedEx = exerciseDB[customEnv][cat][index];
-            if (!selectedEx) return;
-
-            customExercises.push({
-                name: selectedEx.name,
-                target: selectedEx.target,
-                sets: sets,
-                duration: duration,
-                steps: selectedEx.steps,
-                tips: selectedEx.tips,
-                cat: cat
-            });
-
-            renderCustomExercisesList();
-        }
-
-        function renderCustomExercisesList() {
-            const listEl = document.getElementById('custom-exercise-list');
-            document.getElementById('custom-count').innerText = customExercises.length;
-            
-            if (customExercises.length === 0) {
-                listEl.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">尚未新增任何動作</p>`;
-                document.getElementById('btn-start-custom').className = "flex-[2] bg-slate-800 text-slate-500 font-bold py-3.5 rounded-xl transition shadow-lg flex items-center justify-center space-x-2 text-sm cursor-not-allowed";
-                document.getElementById('btn-start-custom').disabled = true;
-                return;
-            }
-
-            listEl.innerHTML = '';
-            customExercises.forEach((ex, idx) => {
-                listEl.innerHTML += `
-                    <div class="bg-slate-900 rounded-xl p-2.5 border border-slate-800 flex justify-between items-center text-xs">
-                        <div>
-                            <span class="font-bold text-slate-100">${idx + 1}. ${ex.name}</span>
-                            <span class="text-slate-400 ml-2">(${ex.target} | ${ex.sets}組x${ex.duration}秒)</span>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <button onclick='openExerciseModal(${JSON.stringify(ex).replace(/'/g, "&#39;")})' class="text-accent hover:text-sky-300 px-2 py-1"><i class="fa-brands fa-youtube"></i></button>
-                            <button onclick="removeCustomExercise(${idx})" class="text-rose-400 hover:text-rose-300 px-2 py-1"><i class="fa-solid fa-trash"></i></button>
-                        </div>
+            weekDays.forEach(day => {
+                const val = weeklyPlan[day.id] || 'rest';
+                const isToday = day.jsDay === todayJsDay;
+                container.innerHTML += `
+                    <div class="bg-slate-900 rounded-xl p-3 border ${isToday ? 'border-sky-400' : 'border-slate-800'} flex justify-between items-center text-xs">
+                        <span class="font-bold ${isToday ? 'text-sky-400' : 'text-slate-200'} w-16">${day.label}</span>
+                        <select id="w-sel-${day.id}" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white">
+                            <option value="chest" ${val==='chest'?'selected':''}>胸部</option>
+                            <option value="back" ${val==='back'?'selected':''}>背部</option>
+                            <option value="legs" ${val==='legs'?'selected':''}>腿部</option>
+                            <option value="shoulders" ${val==='shoulders'?'selected':''}>肩部</option>
+                            <option value="biceps" ${val==='biceps'?'selected':''}>二頭肌</option>
+                            <option value="triceps" ${val==='triceps'?'selected':''}>三頭肌</option>
+                            <option value="abs" ${val==='abs'?'selected':''}>腹肌</option>
+                            <option value="stretching" ${val==='stretching'?'selected':''}>伸展</option>
+                            <option value="rest" ${val==='rest'?'selected':''}>休息</option>
+                        </select>
+                        <button type="button" onclick="launchWeekDay('${day.id}')" class="bg-sky-400/20 text-sky-400 px-2.5 py-1 rounded-lg font-bold">開始</button>
                     </div>
                 `;
             });
-
-            document.getElementById('btn-start-custom').className = "flex-[2] bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3.5 rounded-xl transition shadow-lg flex items-center justify-center space-x-2 text-sm cursor-pointer";
-            document.getElementById('btn-start-custom').disabled = false;
         }
 
-        function removeCustomExercise(index) {
-            customExercises.splice(index, 1);
-            renderCustomExercisesList();
+        function saveWeekly() {
+            weekDays.forEach(day => {
+                weeklyPlan[day.id] = document.getElementById(`w-sel-${day.id}`).value;
+            });
+            localStorage.setItem('weekly_plan', JSON.stringify(weeklyPlan));
+            detectToday();
+            alert('✅ 儲存成功！');
         }
 
-        function startCustomWorkoutSession() {
+        function launchWeekDay(dayId) {
+            saveWeekly();
+            const split = weeklyPlan[dayId];
+            if (split === 'rest') {
+                alert('今天是休息日！');
+                return;
+            }
+            document.getElementById('input-split').value = split;
+            switchView('generator');
+            generateWorkout();
+        }
+
+        function updateCustDropdown() {
+            const cat = document.getElementById('cust-cat').value;
+            const sel = document.getElementById('cust-ex');
+            sel.innerHTML = '';
+            (db[cat] || []).forEach((item, i) => {
+                sel.innerHTML += `<option value="${i}">${item.name} (${item.target})</option>`;
+            });
+        }
+
+        function addCustEx() {
+            if (customExercises.length >= 4) {
+                alert('最多4種動作！');
+                return;
+            }
+            const cat = document.getElementById('cust-cat').value;
+            const idx = parseInt(document.getElementById('cust-ex').value);
+            const item = db[cat][idx];
+            if (!item) return;
+
+            customExercises.push({ ...item, sets: 3, duration: 45 });
+            renderCustList();
+        }
+
+        function renderCustList() {
+            const listEl = document.getElementById('cust-list');
+            const countEl = document.getElementById('cust-count');
+            if (countEl) countEl.innerText = customExercises.length;
+
+            if (customExercises.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">尚未新增動作</p>`;
+                document.getElementById('btn-start-cust').disabled = true;
+                document.getElementById('btn-start-cust').className = "w-full bg-slate-800 text-slate-500 font-bold py-3 rounded-xl text-sm cursor-not-allowed";
+                return;
+            }
+            listEl.innerHTML = '';
+            customExercises.forEach((ex, i) => {
+                listEl.innerHTML += `
+                    <div class="bg-slate-900 rounded-xl p-2.5 border border-slate-800 flex justify-between items-center text-xs">
+                        <div><span class="font-bold text-white">${i+1}. ${ex.name}</span></div>
+                        <button type="button" onclick="removeCust(${i})" class="text-rose-400 px-2 py-1"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+            });
+            document.getElementById('btn-start-cust').disabled = false;
+            document.getElementById('btn-start-cust').className = "w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 rounded-xl text-sm cursor-pointer";
+        }
+
+        function removeCust(i) {
+            customExercises.splice(i, 1);
+            renderCustList();
+        }
+
+        function startCustSession() {
             if (customExercises.length === 0) return;
             sessionData.exercises = [...customExercises];
             sessionData.currentIndex = 0;
             sessionData.currentSet = 1;
-            sessionData.totalSets = sessionData.exercises[0].sets || 3;
-            sessionData.timeLeft = sessionData.exercises[0].duration || 45;
+            sessionData.totalSets = 3;
+            sessionData.timeLeft = 45;
             sessionData.isResting = false;
             sessionData.isPaused = false;
             sessionData.startTime = new Date();
 
-            document.getElementById('tab-custom').classList.add('hidden');
-            document.getElementById('active-session-card').classList.remove('hidden');
-            
+            document.getElementById('view-custom').classList.add('hidden');
+            document.getElementById('view-session').classList.remove('hidden');
             updateSessionUI();
             if (activeTimer) clearInterval(activeTimer);
             activeTimer = setInterval(timerTick, 1000);
@@ -926,113 +661,88 @@
         function generateWorkout() {
             const split = document.getElementById('input-split').value;
             currentSplitCategory = split;
-            let pool = [...(exerciseDB[currentEnv][split] || exerciseDB[currentEnv].fullbody)];
-
+            let pool = [...(db[split] || db.fullbody)];
             pool.sort(() => Math.random() - 0.5);
-            const rawSelected = pool.slice(0, 4);
 
-            sessionData.exercises = rawSelected.map(ex => ({
+            sessionData.exercises = pool.slice(0, 4).map(ex => ({
                 ...ex,
                 sets: split === 'stretching' ? 2 : (currentGoal === 'hypertrophy' ? 4 : 3),
                 duration: split === 'stretching' ? 60 : (currentGoal === 'hypertrophy' ? 50 : 40)
             }));
-            
-            const goalLabel = split === 'stretching' ? '🧘 伸展恢復期' : (currentGoal === 'hypertrophy' ? '💪 增肌肥大期' : '🔥 減脂雕塑期');
-            const splitNames = {
-                chest: '胸部訓練日',
-                back: '背部訓練日',
-                legs: '腿部訓練日',
-                shoulders: '肩部訓練日',
-                biceps: '二頭肌專項訓練日',
-                triceps: '三頭肌專項訓練日',
-                abs: '腹肌核心訓練日',
-                stretching: '伸展與放鬆恢復日',
-                fullbody: '全身綜合循環訓練'
-            };
 
-            document.getElementById('plan-title').innerText = `${goalLabel} - ${splitNames[split]}`;
-            document.getElementById('plan-subtitle').innerText = `${currentEnv === 'home' ? '🏠 居家專屬' : '🏋️‍♂️ 健身房商用'} (20大動作精選4種，可隨時更換)`;
-
-            renderGeneratedWorkoutList();
+            document.getElementById('plan-title').innerText = `${currentGoal === 'hypertrophy' ? '💪 增肌' : '🔥 減脂'} - ${split}`;
+            renderGenList();
 
             document.getElementById('setup-card').classList.add('hidden');
             document.getElementById('workout-container').classList.remove('hidden');
         }
 
-        function renderGeneratedWorkoutList() {
+        function renderGenList() {
             const listEl = document.getElementById('exercise-list');
             listEl.innerHTML = '';
             sessionData.exercises.forEach((ex, idx) => {
                 listEl.innerHTML += `
                     <div class="bg-slate-900 rounded-xl p-3.5 border border-slate-800 flex justify-between items-center">
-                        <div class="space-y-1">
-                            <span class="text-[10px] bg-accent/20 text-accent px-2 py-0.5 rounded font-medium">動作 ${idx + 1}</span>
-                            <h4 class="text-sm font-bold text-slate-100">${ex.name}</h4>
-                            <p class="text-xs text-slate-400">主肌群：${ex.target} | ${ex.sets} 組 x ${ex.duration}秒</p>
+                        <div>
+                            <span class="text-[10px] bg-sky-400/20 text-sky-400 px-2 py-0.5 rounded font-medium">動作 ${idx + 1}</span>
+                            <h4 class="text-sm font-bold text-white mt-1">${ex.name}</h4>
+                            <p class="text-xs text-slate-400">${ex.target} | ${ex.sets}組 x ${ex.duration}秒</p>
                         </div>
-                        <div class="flex items-center space-x-1.5">
-                            <button onclick="swapExercise(${idx})" class="bg-slate-800 hover:bg-slate-700 text-xs px-2.5 py-1.5 rounded-lg text-accent transition flex items-center space-x-1" title="更換其他動作">
-                                <i class="fa-solid fa-shuffle"></i>
-                                <span>更換</span>
-                            </button>
-                            <button onclick='openExerciseModal(${JSON.stringify(ex).replace(/'/g, "&#39;")})' class="bg-slate-800 hover:bg-slate-700 text-xs px-2.5 py-1.5 rounded-lg text-slate-300 transition" title="觀看教學">
-                                <i class="fa-brands fa-youtube text-rose-500"></i>
-                            </button>
+                        <div class="flex space-x-1.5">
+                            <button type="button" onclick="swapEx(${idx})" class="bg-slate-800 text-sky-400 text-xs px-2.5 py-1.5 rounded-lg">更換</button>
+                            <button type="button" onclick="openModal('${ex.name}', '${ex.steps}', '${ex.tips}')" class="bg-slate-800 text-slate-300 text-xs px-2.5 py-1.5 rounded-lg"><i class="fa-brands fa-youtube text-rose-500"></i></button>
                         </div>
                     </div>
                 `;
             });
         }
 
-        function swapExercise(index) {
-            const pool = exerciseDB[currentEnv][currentSplitCategory] || exerciseDB[currentEnv].fullbody;
+        function swapEx(idx) {
+            const pool = db[currentSplitCategory] || [];
             const currentNames = sessionData.exercises.map(e => e.name);
-            const availablePool = pool.filter(e => !currentNames.includes(e.name));
-
-            if (availablePool.length === 0) {
-                alert('沒有更多備選動作可替換囉！');
+            const avail = pool.filter(e => !currentNames.includes(e.name));
+            if (avail.length === 0) {
+                alert('沒有更多備選動作！');
                 return;
             }
-
-            const rawNewEx = availablePool[Math.floor(Math.random() * availablePool.length)];
-            const newEx = {
-                ...rawNewEx,
+            const newEx = avail[Math.floor(Math.random() * avail.length)];
+            sessionData.exercises[idx] = {
+                ...newEx,
                 sets: currentSplitCategory === 'stretching' ? 2 : (currentGoal === 'hypertrophy' ? 4 : 3),
                 duration: currentSplitCategory === 'stretching' ? 60 : (currentGoal === 'hypertrophy' ? 50 : 40)
             };
-            sessionData.exercises[index] = newEx;
-            renderGeneratedWorkoutList();
+            renderGenList();
         }
 
-        function resetSetup() {
+        function resetAll() {
             document.getElementById('setup-card').classList.remove('hidden');
             document.getElementById('workout-container').classList.add('hidden');
+            document.getElementById('view-session').classList.add('hidden');
         }
 
-        function openExerciseModal(ex) {
-            document.getElementById('modal-ex-title').innerText = ex.name;
-            document.getElementById('modal-ex-steps').innerText = ex.steps || '維持標準姿勢，穩定發力完成動作。';
-            document.getElementById('modal-ex-tips').innerText = ex.tips || '全程保持呼吸順暢，切勿憋氣。';
-            document.getElementById('modal-yt-link').href = getYouTubeSearchURL(ex.name);
-            document.getElementById('exercise-modal').classList.remove('hidden');
+        function openModal(name, steps, tips) {
+            document.getElementById('modal-title').innerText = name;
+            document.getElementById('modal-steps').innerText = steps;
+            document.getElementById('modal-tips').innerText = tips;
+            document.getElementById('modal-yt').href = `https://www.youtube.com/results?search_query=${encodeURIComponent(name + ' 標準動作教學')}`;
+            document.getElementById('modal').classList.remove('hidden');
         }
 
-        function closeExerciseModal() {
-            document.getElementById('exercise-modal').classList.add('hidden');
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
         }
 
-        function startWorkoutSession() {
+        function startSession() {
             sessionData.currentIndex = 0;
             sessionData.currentSet = 1;
-            sessionData.totalSets = sessionData.exercises[0].sets || 3;
-            sessionData.timeLeft = sessionData.exercises[0].duration || 45;
+            sessionData.totalSets = sessionData.exercises[0].sets;
+            sessionData.timeLeft = sessionData.exercises[0].duration;
             sessionData.isResting = false;
             sessionData.isPaused = false;
             sessionData.startTime = new Date();
 
             document.getElementById('workout-container').classList.add('hidden');
-            document.getElementById('active-session-card').classList.remove('hidden');
-            
+            document.getElementById('view-session').classList.remove('hidden');
             updateSessionUI();
             if (activeTimer) clearInterval(activeTimer);
             activeTimer = setInterval(timerTick, 1000);
@@ -1042,22 +752,11 @@
             const ex = sessionData.exercises[sessionData.currentIndex];
             document.getElementById('session-progress-text').innerText = `動作 ${sessionData.currentIndex + 1} / ${sessionData.exercises.length}`;
             document.getElementById('active-ex-name').innerText = ex.name;
-            document.getElementById('active-ex-target').innerText = `主肌群：${ex.target}`;
-            document.getElementById('active-yt-link').href = getYouTubeSearchURL(ex.name);
-            
-            const timerLabel = document.getElementById('timer-label');
-            const timerSetsInfo = document.getElementById('timer-sets-info');
-            const timerBox = document.getElementById('timer-box');
+            document.getElementById('active-ex-target').innerText = `目標：${ex.target}`;
+            document.getElementById('active-yt-link').href = `https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name + ' 標準動作教學')}`;
 
-            if (sessionData.isResting) {
-                timerLabel.innerText = "組間休息時間";
-                timerSetsInfo.innerText = `準備進入第 ${sessionData.currentSet} 組`;
-                timerBox.className = "bg-sky-950/60 rounded-2xl p-6 border border-sky-800 relative overflow-hidden";
-            } else {
-                timerLabel.innerText = "動作執行中";
-                timerSetsInfo.innerText = `第 ${sessionData.currentSet} 組 / 共 ${sessionData.totalSets} 組`;
-                timerBox.className = "bg-slate-900/90 rounded-2xl p-6 border border-slate-800 relative overflow-hidden";
-            }
+            document.getElementById('timer-label').innerText = sessionData.isResting ? "組間休息" : "訓練進行中";
+            document.getElementById('timer-sets-info').innerText = sessionData.isResting ? `準備第 ${sessionData.currentSet} 組` : `第 ${sessionData.currentSet} 組 / 共 ${sessionData.totalSets} 組`;
 
             const m = Math.floor(sessionData.timeLeft / 60).toString().padStart(2, '0');
             const s = (sessionData.timeLeft % 60).toString().padStart(2, '0');
@@ -1066,12 +765,10 @@
 
         function timerTick() {
             if (sessionData.isPaused) return;
-
             if (sessionData.timeLeft > 0) {
                 sessionData.timeLeft--;
                 updateSessionUI();
             } else {
-                playBeepSound();
                 if (!sessionData.isResting) {
                     if (sessionData.currentSet < sessionData.totalSets) {
                         sessionData.isResting = true;
@@ -1080,114 +777,74 @@
                         sessionData.currentIndex++;
                         if (sessionData.currentIndex < sessionData.exercises.length) {
                             sessionData.currentSet = 1;
-                            sessionData.totalSets = sessionData.exercises[sessionData.currentIndex].sets || 3;
+                            sessionData.totalSets = sessionData.exercises[sessionData.currentIndex].sets;
                             sessionData.isResting = false;
-                            sessionData.timeLeft = sessionData.exercises[sessionData.currentIndex].duration || 45;
+                            sessionData.timeLeft = sessionData.exercises[sessionData.currentIndex].duration;
                         } else {
-                            finishWorkoutSession();
+                            finishSession();
                             return;
                         }
                     }
                 } else {
                     sessionData.isResting = false;
                     sessionData.currentSet++;
-                    sessionData.timeLeft = sessionData.exercises[sessionData.currentIndex].duration || 45;
+                    sessionData.timeLeft = sessionData.exercises[sessionData.currentIndex].duration;
                 }
                 updateSessionUI();
             }
         }
 
-        function skipTimerSet() {
+        function skipSet() {
             sessionData.timeLeft = 0;
             timerTick();
         }
 
-        function toggleTimerPause() {
+        function togglePause() {
             sessionData.isPaused = !sessionData.isPaused;
-            const btn = document.getElementById('btn-pause');
-            if (sessionData.isPaused) {
-                btn.innerHTML = '<i class="fa-solid fa-play mr-1"></i>繼續';
-                btn.className = "flex-1 bg-accent text-slate-950 font-bold py-3 rounded-xl transition text-sm";
-            } else {
-                btn.innerHTML = '<i class="fa-solid fa-pause mr-1"></i>暫停';
-                btn.className = "flex-1 bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-xl transition text-sm";
-            }
+            document.getElementById('btn-pause').innerText = sessionData.isPaused ? '繼續' : '暫停';
         }
 
         function quitSession() {
-            if (confirm("確定要放棄目前的訓練嗎？")) {
+            if (confirm("確定放棄目前訓練？")) {
                 clearInterval(activeTimer);
                 activeTimer = null;
-                document.getElementById('active-session-card').classList.add('hidden');
-                document.getElementById('workout-container').classList.remove('hidden');
+                document.getElementById('view-session').classList.add('hidden');
+                document.getElementById('view-custom').classList.remove('hidden');
             }
         }
 
-        function finishWorkoutSession() {
+        function finishSession() {
             clearInterval(activeTimer);
             activeTimer = null;
-
-            const endTime = new Date();
-            const durationMin = Math.round((endTime - sessionData.startTime) / 60000) || 1;
-            const calories = currentSplitCategory === 'stretching' ? (durationMin * 4) : durationMin * (currentGoal === 'hypertrophy' ? 8 : 11);
+            const durMin = Math.round((new Date() - sessionData.startTime) / 60000) || 1;
+            const cals = durMin * 9;
 
             let history = JSON.parse(localStorage.getItem('workout_history') || '[]');
-            history.unshift({
-                date: endTime.toLocaleDateString() + ' ' + endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                mode: currentSplitCategory === 'stretching' ? '🧘 伸展恢復' : ((currentGoal === 'hypertrophy' ? '💪 增肌期' : '🔥 減脂期') + ' 訓練'),
-                count: sessionData.exercises.length,
-                duration: durationMin,
-                calories: calories
-            });
+            history.unshift({ date: new Date().toLocaleString(), mode: '健身訓練', duration: durMin, calories: cals });
             localStorage.setItem('workout_history', JSON.stringify(history));
 
-            alert(`🎉 恭喜完成今日訓練！\n總計耗時：${durationMin} 分鐘\n消耗熱量：約 ${calories} kcal`);
-
-            document.getElementById('active-session-card').classList.add('hidden');
-            resetSetup();
+            alert(`🎉 恭喜完成訓練！耗時 ${durMin} 分鐘，消耗約 ${cals} kcal`);
+            document.getElementById('view-session').classList.add('hidden');
+            document.getElementById('view-generator').classList.remove('hidden');
+            resetAll();
         }
 
         function renderHistory() {
-            const historyList = document.getElementById('history-list');
+            const list = document.getElementById('history-list');
             const history = JSON.parse(localStorage.getItem('workout_history') || '[]');
-            
             if (history.length === 0) {
-                historyList.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">尚無訓練紀錄，快去完成第一次訓練吧！</p>`;
+                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">尚無訓練紀錄</p>`;
                 return;
             }
-
-            historyList.innerHTML = '';
+            list.innerHTML = '';
             history.forEach(item => {
-                historyList.innerHTML += `
+                list.innerHTML += `
                     <div class="bg-slate-900 rounded-xl p-3 border border-slate-800 flex justify-between items-center text-xs">
-                        <div class="space-y-1">
-                            <span class="text-accent font-semibold">${item.mode}</span>
-                            <p class="text-slate-400">${item.date}</p>
-                        </div>
-                        <div class="text-right space-y-0.5">
-                            <span class="text-slate-200 font-bold">${item.duration} 分鐘</span>
-                            <p class="text-slate-400">約 ${item.calories} kcal</p>
-                        </div>
+                        <div><span class="text-sky-400 font-semibold">${item.mode}</span><p class="text-slate-400">${item.date}</p></div>
+                        <div class="text-right"><span class="text-white font-bold">${item.duration} 分鐘</span><p class="text-slate-400">約 ${item.calories} kcal</p></div>
                     </div>
                 `;
             });
-        }
-
-        function playBeepSound() {
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
-                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                oscillator.start();
-                oscillator.stop(audioCtx.currentTime + 0.3);
-            } catch (e) {
-                console.log('Audio Context not supported');
-            }
         }
     </script>
 </body>
